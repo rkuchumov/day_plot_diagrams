@@ -5,22 +5,22 @@
 #include <stdlib.h>
 
 const char *argp_program_version =
-  "main 1.0";
+"main 1.0";
 
 const char *argp_program_bug_address =
-  "<kuchumovri@gmail.com>";
+"<kuchumovri@gmail.com>";
 
 static char doc[] =
-  "main -- program description";
+"main -- program description";
 
 static char args_doc[] = "FILE";
 
 static struct argp_option options[] = {
-  {"verbose",  'v', 0,      0,  "Produce verbose output"},
-  {"debug",    'd', 0,      OPTION_ALIAS},
-  {"output",   'o', "FILE", 0, "Output FILE name"},
-  {"config",   'c', "FILE", 0, "Config FILE name (default: config.ini)"},
-  {0}
+    {"verbose",  'v', 0,      0,  "Produce verbose output"},
+    {"debug",    'd', 0,      OPTION_ALIAS},
+    {"output",   'o', "FILE", 0, "Output FILE name"},
+    {"config",   'c', "FILE", 0, "Config FILE name (default: config.ini)"},
+    {0}
 };
 
 /* Parse a single option. */

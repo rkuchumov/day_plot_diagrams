@@ -17,9 +17,9 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
 
     debug("Opening %s", cfg.input_file);
-	FILE *fp = fopen(cfg.input_file, "r");
-	if (fp == NULL)
-		fatal_errno("fopen");
+    FILE *fp = fopen(cfg.input_file, "r");
+    if (fp == NULL)
+        fatal_errno("fopen");
 
     if (parse_header(fp) < 0)
         exit(EXIT_FAILURE);
