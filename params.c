@@ -24,7 +24,8 @@ static struct argp_option options[] = {
 };
 
 /* Parse a single option. */
-static error_t parse_opt(int key, char *arg, struct argp_state *state) {
+static error_t parse_opt(int key, char *arg, struct argp_state *state)
+{
     /* Get the input argument from argp_parse, which we
        know is a pointer to our arguments structure. */
     struct cfg_t *cfg = state->input;
@@ -60,23 +61,32 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state) {
 
 static struct argp argp = {options, parse_opt, args_doc, doc};
 
-void init_cfg() {
+void init_cfg()
+{
     cfg.debug_out = DFT_DEBUG_OUT;
     cfg.output_file = DFT_OUTPUT_FILE;
     cfg.cfg_file = DFT_CFG_FILE;
 
     cfg.data_offset = DFT_DATA_OFFSET;
     cfg.data_type = DFT_DATA_TYPE;
+    cfg.sampling_rate = DFT_SAMPLING_RATE;
+    cfg.plot_period = DFT_PLOT_PERIOD;
+    cfg.avg_cnt = DFT_AVERAGE_SIZE;
+    cfg.plot_width = DFT_PLOT_WIDTH;
+    cfg.plot_height = DFT_PLOT_HEIGHT;
+    cfg.plot_line_color = DFT_PLOT_LINE_COLOR;
 
     cfg.is_inited = true;
 }
 
-int parse_config_file() {
+int parse_config_file()
+{
     /* TODO  */
     return 1;
 }
 
-int parse_cmd_line(int argc, char *argv[]) {
+int parse_cmd_line(int argc, char *argv[])
+{
     argp_parse (&argp, argc, argv, 0, 0, &cfg);
 
     debug("Command line agruments:");

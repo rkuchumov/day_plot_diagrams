@@ -133,3 +133,23 @@ float read_flt(FILE *fp)
 
     return flt_u.f;
 }
+
+long samples_cnt(FILE *fp)
+{
+    long cur = ftell(fp);
+
+    if (fseek(fp, 0L, SEEK_END) < 0)
+        fatal_errno("fseek");
+
+    long end = ftell(fp);
+
+    if (fseek(fp, cur, SEEK_SET) < 0)
+        fatal_errno("fseek");
+
+    if (cfg.data_type == FLOAT)
+        return (end - cur) / (sizeof(float));
+    else 
+        fatal("Unsupported data type");
+
+    return 0;
+}

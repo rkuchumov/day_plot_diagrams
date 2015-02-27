@@ -20,5 +20,9 @@ void parse_header_opt(char *name, char *value);
  */
 float read_flt(FILE *fp);
 
+/** Returns the number of values of cfg.data_type type in specified file 
+ */
+long samples_cnt(FILE *fp);
+
 #endif /* end of include guard: FORMAT_H */
 

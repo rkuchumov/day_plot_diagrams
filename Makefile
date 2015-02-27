@@ -43,6 +43,8 @@ docs:
 
 .PHONY: run
 run: all
-	./$(TARGET) -v ./test/02092014-000000-MHZ.6I36
+	./$(TARGET) -v ./test/02092014-000000-MHE.6I36
+	# ./$(TARGET) -v ./test/02092014-000000-MHN.6I36
+	# ./$(TARGET) -v ./test/02092014-000000-MHZ.6I36
 
 -include .depend
