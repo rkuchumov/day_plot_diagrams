@@ -7,15 +7,15 @@
 
 #define DFT_DEBUG_OUT 0
 #define DFT_CFG_FILE "config.ini"
-#define DFT_OUTPUT_FILE "output"
+#define DFT_OUTPUT_FILE "output.png"
 #define DFT_INPUT_FILE NULL
 #define DFT_DATA_OFFSET 512
 #define DFT_DATA_TYPE FLOAT
 #define DFT_SAMPLING_RATE 50
-#define DFT_PLOT_PERIOD 3600 /* 1 hr */
-#define DFT_AVERAGE_SIZE 500
+#define DFT_PLOT_PERIOD 900 /* 1 hr */
+#define DFT_AVERAGE_SIZE 50
 #define DFT_PLOT_WIDTH 900
-#define DFT_PLOT_HEIGHT 250
+#define DFT_PLOT_HEIGHT 900
 #define DFT_PLOT_LINE_COLOR "#0060ad"
 
 /** Config data structure */

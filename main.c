@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <float.h>
 
 #include "utils.h"
 #include "params.h"
 #include "format.h"
+#include "plot.h"
 #include <unistd.h>
 
 #include "gnuplot_i.h"
@@ -27,56 +29,59 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
 
     long spl_cnt = samples_cnt(fp);
-    debug("Samples count = %ld", spl_cnt);
+    debug("Samples count in file= %ld", spl_cnt);
 
-    long spl_per_plot = cfg.sampling_rate * cfg.plot_period;
+    long spl_per_plot = cfg.sampling_rate * cfg.plot_period / cfg.avg_cnt;
     debug("Samples per plot = %ld", spl_per_plot);
 
-    int plot_num = spl_cnt / spl_per_plot;
+    int plot_num = spl_cnt / (cfg.sampling_rate * cfg.plot_period);
     debug("Number of plots = %d", plot_num);
 
-    FILE *tmp1 = fopen("tmp1.dat", "w+");
-    if (tmp1 == NULL)
-        fatal_errno("fopen");
+    float *data = malloc(sizeof(float) * spl_cnt / cfg.avg_cnt);
+    if (data == NULL)
+        fatal_errno("malloc");
 
-    float dt = (float) cfg.avg_cnt / (cfg.sampling_rate * 60.0f);
 
-    float avg;
-    for (unsigned i = 0; i < spl_per_plot / cfg.avg_cnt; i++) {
-        avg = 0;
+    float max = FLT_MIN;
+    float min = FLT_MAX;
+
+    for (int i = 0; i < spl_cnt / cfg.avg_cnt; i++) {
+        float avg = 0;
         for (unsigned j = 0; j < cfg.avg_cnt; j++) {
-            if (feof(fp))
-                goto out;
+            /* if (feof(fp)) */
+                /* goto out; */
 
             avg += (read_flt(fp) / cfg.avg_cnt);
         }
 
-        fprintf(tmp1, "%f %f\n", (float) i * dt , avg);
+        if (max < avg)
+            max = avg;
+        if (min > avg)
+            min = avg;
+
+        data[i] = avg;
     }
 
-out:
-    fflush(tmp1);
-    fclose(tmp1);
+    char *tmp_file = m_mktemp();
+    FILE *tmp_fp = fopen(tmp_file, "w");
+    if (tmp_fp == NULL)
+        fatal_errno("fopen");
 
-    /* TODO */
-    gnuplot_ctrl *h;
-    h = gnuplot_init();
-    if (h == NULL)
-        fatal("gnuplot init failed");
+    float dt = (float) cfg.avg_cnt / (cfg.sampling_rate * 60.0f);
+    for (int i = 0; i < spl_per_plot; i++) {
+        fprintf(tmp_fp, "%f ", (float) i * dt);
 
-    char cmd[150];
-	sprintf(cmd, "set terminal png size %u,%u", 
-	        cfg.plot_width, cfg.plot_height);
-    gnuplot_cmd(h, cmd);
+        for (int j = 0; j < plot_num; j++)
+            fprintf(tmp_fp, "%f ", data[i + j * (spl_per_plot)]);
+        fprintf(tmp_fp, "\n");
+    }
 
-	sprintf(cmd, "set style line 1 lc rgb \'%s\'",
-	        cfg.plot_line_color);
-    gnuplot_cmd(h, cmd);
+    fflush(tmp_fp);
+    fclose(tmp_fp);
 
-    gnuplot_cmd(h, "set output \"sine.png\"");
-    gnuplot_cmd(h, "plot \"tmp1.dat\" with lines ls 1");
-    gnuplot_close(h);
+    plot_init();
 
+    plot(tmp_file, plot_num, min, max);
 
     return 0;
 }

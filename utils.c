@@ -5,6 +5,10 @@
 #include <stdarg.h>
 #include <assert.h>
 
+#ifndef WIN32
+#include <unistd.h>
+#endif
+
 void printlog(unsigned vlevel, const char *file, int line, 
         const char *fmt, ...)
 {
@@ -37,4 +41,24 @@ void printlog(unsigned vlevel, const char *file, int line,
 
     if (vlevel == FATAL)
         exit(EXIT_FAILURE);
+}
+
+char *m_mktemp()
+{
+    static char const *template = "/tmp/geodiagrams_XXXXXX";
+    int len = strlen(template);
+
+    char *filename = (char*) malloc(len + 1);
+    if (filename == NULL)
+        fatal_errno("malloc");
+
+    strcpy(filename, template);
+
+    int fd;
+    if ((fd = mkstemp(filename)) == -1)
+        fatal_errno("mktemp");
+
+    close(fd);
+
+    return filename;
 }

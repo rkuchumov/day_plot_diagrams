@@ -9,6 +9,8 @@
 void printlog(unsigned vlevel, const char *file, int line, 
         const char *fmt, ...);
 
+char *m_mktemp();
+
 #define FATAL 0
 #define DEBUG 1
 /** buffer size for log messages */
