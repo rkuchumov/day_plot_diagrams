@@ -6,13 +6,20 @@
 #define FLOAT 1
 
 #define DFT_DEBUG_OUT 0
+
 #define DFT_CFG_FILE "config.ini"
 #define DFT_OUTPUT_FILE "output.png"
-#define DFT_INPUT_FILE NULL
+#define DFT_INPUT_FILE "data.wfdisk"
+
+#define DFT_WFDISC_FILE "data.wfdisc"
+
+#define DFT_CHANNEL "MHZ"
+
 #define DFT_DATA_OFFSET 512
 #define DFT_DATA_TYPE FLOAT
 #define DFT_SAMPLING_RATE 50
 #define DFT_PLOT_PERIOD 900 /* 1 hr */
+
 #define DFT_AVERAGE_SIZE 50
 #define DFT_PLOT_WIDTH 900
 #define DFT_PLOT_HEIGHT 900
@@ -24,6 +31,9 @@ struct cfg_t {
     char *cfg_file;
     char *output_file;
     char *input_file;
+
+    char *wfdisc_file;
+    char *channel;
 
     unsigned data_offset;
     unsigned data_type;

@@ -4,6 +4,9 @@
 #include <stdlib.h>
 
 #include <stdint.h>
+#include <assert.h>
+
+#include <libgen.h>
 
 #include "utils.h"
 #include "format.h"
@@ -17,112 +20,172 @@ union u4 {
     uint8_t data[4];
 };
 
-int parse_header(FILE *fp)
+struct wf_t {
+    char chan[9];
+    float time;
+    int nstamp;
+    float samprate;
+    char dir[65];
+    char dfile[33];
+    int foff;
+};
+
+char *read_wfdisc_line(FILE *wfdisc_fp);
+void parse_wfdisc_line(char *line, struct wf_t *wf);
+FILE *open_data_file(struct wf_t *wf);
+int skip_data_file(struct wf_t *wf);
+
+FILE *next_file(FILE *wfdisc_fp) 
 {
-    assert(fp != NULL);
+    assert(wfdisc_fp != NULL);
+    assert(cfg.is_inited);
 
-    char *line = NULL;
-    size_t len = 0;
+    struct wf_t wf;
 
-    int key_len;
-    int value_len;
-    char *value;
+    do {
+        char *line = read_wfdisc_line(wfdisc_fp);
+        if (line == NULL)
+            return NULL;
 
-    char *value_cpy = NULL;
+        parse_wfdisc_line(line, &wf);
 
-    unsigned bytes_read = 0;
-
-    debug("Parsing header");
-
-    while (fgetc(fp) != '\n')
-        bytes_read++;
-
-    ssize_t rc = 0;
-    while ((rc = getline(&line, &len, fp)) > 0) {
-        bytes_read += rc;
-
-        for (int i = 0; i < rc; i++) {
-            if ('=' == line[i]) {
-                /* skip spaces before '=' */
-                int j = i - 1;
-                while (j >= 0 && strchr(" \t", line[j])) j--;
-
-                key_len = j + 1; 
-                line[key_len] = '\0';
-
-                /* skip spaces after '=' */
-                j = i + 1;
-                while (j < rc && strchr(" \t", line[j])) j++;
-
-                value = &line[j]; 
-
-            } else if ('\n' == line[i]) {
-                /* skip spaces before '\n' */
-                int j = i - 1;
-                while (j >= 0 && strchr(" \t", line[j])) j--;
-
-                line[j + 1] = '\0';
-                value_len = j + 1 - (value - line); 
-                break;
-            } 
-        }
-
-        if ((value_cpy = (char *) malloc(value_len)) == NULL)
-            fatal_errno("malloc");
-
-        if (*value == '"' && value[value_len - 1] == '"') {
-            memcpy(value_cpy, value + 1, value_len - 1);
-            value_cpy[value_len - 2] = '\0';
-        } else {
-            memcpy(value_cpy, value, value_len);
-            value_cpy[value_len - 1] = '\0';
-        }
-
-        parse_header_opt(line, value_cpy);
-
-        int c = fgetc(fp);
-        if (fseek(fp, -1, SEEK_CUR) < 0)
-            fatal_errno("fseek");
-        if (c == 0)
-            break;
-    }
-
-    if (line != NULL)
         free(line);
 
-    if (bytes_read > cfg.data_offset)
-        fatal("Header size is greater than data offset");
+    } while (skip_data_file(&wf));
 
-    if (fseek(fp, cfg.data_offset - bytes_read - 1, SEEK_CUR) < 0)
+    FILE *data_fp = open_data_file(&wf);
+    assert(data_fp != NULL);
+
+    if (fseek(data_fp, wf.foff, SEEK_SET) < 0)
         fatal_errno("fseek");
 
-    return 1;
+    return data_fp;
+};
+
+char *read_wfdisc_line(FILE *wfdisc_fp)
+{
+    assert(wfdisc_fp != NULL);
+    assert(cfg.is_inited);
+
+	char *line = NULL;
+	size_t len = 0;
+	ssize_t rc;
+	if ((rc = getline(&line, &len, wfdisc_fp)) <= 0) {
+        if (feof(wfdisc_fp))
+            return NULL;
+
+        fatal_errno("getline");
+    }
+
+    return line;
 }
 
-void parse_header_opt(char *name, char *value)
+void parse_wfdisc_line(char *line, struct wf_t *wf)
 {
-    /* debug("%s => %s ", name, value); */
+    assert(line != NULL);
+    assert(wf != NULL);
+    assert(cfg.is_inited);
 
-    char *endptr;
-    int val_num = strtol(value, &endptr, 10);
+    size_t rc = sscanf(line, 
+            "%*s " /* station code */
+            "%s "  /* channel code */
+            "%f "  /* epoch time of first sample in file */
+            "%*d " /* waveform identifier */
+            "%*d " /* channel identifier */
+            "%*d " /* julian date */
+            "%*f " /* time +(nsamp -1 )/samles */
+            "%d "  /* number of samples */
+            "%f "  /* sampling rate in samples/sec */
+            "%*f " /* nominal calibration */
+            "%*f " /* nominal calibration period */
+            "%*s " /* instrument code */
+            "%*s " /* indexing method */
+            "%*s " /* numeric storage */
+            "%*s " /* clipped flag */
+            "%s "  /* directory */
+            "%s "  /* data file */
+            "%d "  /* byte offset of data seg ment within file */
+            "%*d " /* comment identifier */
+            "%*s ", /* load date */
+        wf->chan,
+        &wf->time,
+        &wf->nstamp,
+        &wf->samprate,
+        wf->dir,
+        wf->dfile,
+        &wf->foff
+            );
 
-    if (strcmp(name, "Data offset") == 0) {
-        cfg.data_offset = val_num;
-        if (*endptr != '\0')
-            fatal("%s is expected to be a number", name);
-    } else if (strcmp(name, "Data Type") == 0) {
-        if (strcmp(value, "FLOAT") == 0)
-            cfg.data_type = FLOAT;
-        /* XXX: is there other formats? */
-    }
+    if (rc != 7) /* number of assigned values in sscanf */
+        fatal("error while reading wfsisc file");
+
+    debug("wfdisc line read (%zd assigned values)", rc);
+    debug("chan \t= %s", wf->chan);
+    debug("time \t= %17.5f", wf->time);
+    debug("nstamp \t= %d", wf->nstamp);
+    debug("samprate \t= %17.5f", wf->samprate);
+    debug("dir \t= %s", wf->dir);
+    debug("dfile \t= %s", wf->dfile);
+    debug("foff \t= %d", wf->foff);
+}
+
+FILE *open_data_file(struct wf_t *wf)
+{
+    assert(cfg.is_inited);
+    assert(wf != NULL);
+    assert(wf->dir != NULL);
+    assert(wf->dfile != NULL);
+
+    char path[PATH_MAX] = {0};
+    char *e = path;
+
+    char tmp[PATH_MAX] = {0};
+
+    strcpy(tmp, cfg.wfdisc_file);
+    e += sprintf(e, "%s/", dirname(tmp));
+
+    strcpy(tmp, wf->dir);
+    e += sprintf(e, "%s/", dirname(tmp));
+
+    strcpy(tmp, wf->dfile);
+    e += sprintf(e, "%s", basename(tmp));
+
+    debug("Opening data file (%s)", path);
+
+    FILE *data_fp = fopen(path, "r");
+    if (data_fp == NULL)
+        fatal_errno("fopen");
+
+    return data_fp;
+}
+
+int skip_data_file(struct wf_t *wf)
+{
+    assert(cfg.is_inited);
+    assert(wf != NULL);
+
+    if (strcmp(wf->chan, cfg.channel) == 0)
+        return false;
+
+    return true;
 }
 
 float read_flt(FILE *fp) 
 {
     union u4 flt_u;
+    uint8_t d[4];
 
-    // XXX: handle endians
-    fread(flt_u.data, 1, 4, fp);
+    fread(d, 1, 4, fp);
+
+    /* flt_u.data[0] = d[3]; */
+    /* flt_u.data[1] = d[2]; */
+    /* flt_u.data[2] = d[1]; */
+    /* flt_u.data[3] = d[0]; */
+
+    flt_u.data[0] = d[0];
+    flt_u.data[1] = d[1];
+    flt_u.data[2] = d[2];
+    flt_u.data[3] = d[3];
 
     /* debug("%#02x %#02x %#02x %#02x --> %f",  */
     /*         flt_u.data[0],  */
@@ -132,24 +195,4 @@ float read_flt(FILE *fp)
     /*         flt_u.f); */
 
     return flt_u.f;
-}
-
-long samples_cnt(FILE *fp)
-{
-    long cur = ftell(fp);
-
-    if (fseek(fp, 0L, SEEK_END) < 0)
-        fatal_errno("fseek");
-
-    long end = ftell(fp);
-
-    if (fseek(fp, cur, SEEK_SET) < 0)
-        fatal_errno("fseek");
-
-    if (cfg.data_type == FLOAT)
-        return (end - cur) / (sizeof(float));
-    else 
-        fatal("Unsupported data type");
-
-    return 0;
 }

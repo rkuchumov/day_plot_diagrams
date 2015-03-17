@@ -14,7 +14,7 @@ char *m_mktemp();
 #define FATAL 0
 #define DEBUG 1
 /** buffer size for log messages */
-#define LOG_MSG_SIZE 150
+#define LOG_MSG_SIZE 400
 
 #define fatal(...)       printlog(FATAL, __FILE__, __LINE__, __VA_ARGS__)
 #define fatal_errno(str) printlog(FATAL, __FILE__, __LINE__, "%s() error: %s", str, strerror(errno))

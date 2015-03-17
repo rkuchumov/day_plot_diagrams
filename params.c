@@ -45,7 +45,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
                 /* Too many arguments. */
                 argp_usage (state);
 
-            cfg->input_file = arg;
+            cfg->wfdisc_file = arg;
 
             break;
         case ARGP_KEY_END:
@@ -66,6 +66,9 @@ void init_cfg()
     cfg.debug_out = DFT_DEBUG_OUT;
     cfg.output_file = DFT_OUTPUT_FILE;
     cfg.cfg_file = DFT_CFG_FILE;
+
+    cfg.wfdisc_file = DFT_WFDISC_FILE;
+    cfg.channel = DFT_CHANNEL;
 
     cfg.data_offset = DFT_DATA_OFFSET;
     cfg.data_type = DFT_DATA_TYPE;
@@ -97,3 +100,4 @@ int parse_cmd_line(int argc, char *argv[])
 
     return 1;
 }
+

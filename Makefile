@@ -3,7 +3,7 @@ SHELL = /bin/sh
 CC = gcc
 # CFLAGS = -Wall -Wextra -pedantic-g
 CFLAGS = -Wall -Wextra -Wno-missing-field-initializers -g
-ALL_FLAGS = -std=gnu99
+ALL_FLAGS = -std=gnu99 -lm
 
 TARGET = main
 
@@ -43,7 +43,7 @@ docs:
 
 .PHONY: run
 run: all
-	./$(TARGET) -v ./test/02092014-000000-MHE.6I36
+	./$(TARGET) -v ./test/data.wfdisc
 	# ./$(TARGET) -v ./test/02092014-000000-MHN.6I36
 	# ./$(TARGET) -v ./test/02092014-000000-MHZ.6I36
 

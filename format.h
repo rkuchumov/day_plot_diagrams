@@ -3,15 +3,7 @@
 
 #include <stdio.h>
 
-/** Parses file header into cfg structure. Sets current file position
- * to the beginning of relevant data
- *
- * @param fp file pointer to read header from
- * @return -1 on error, 1 otherwise
- */
-int parse_header(FILE *fp);
-
-void parse_header_opt(char *name, char *value);
+FILE *next_file(FILE *wfdisc_fp);
 
 /** Reads 4 byte from specified file and converts it to float
  *
@@ -19,10 +11,6 @@ void parse_header_opt(char *name, char *value);
  * @return float value
  */
 float read_flt(FILE *fp);
-
-/** Returns the number of values of cfg.data_type type in specified file 
- */
-long samples_cnt(FILE *fp);
 
 #endif /* end of include guard: FORMAT_H */
 
