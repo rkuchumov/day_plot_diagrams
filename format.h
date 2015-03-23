@@ -2,15 +2,16 @@
 #define FORMAT_H
 
 #include <stdio.h>
+#include <time.h>
 
-FILE *next_file(FILE *wfdisc_fp);
+struct data_t {
+    float *d;
+    int samp_cnt;
+    float samp_rate;
+    time_t time;
+};
 
-/** Reads 4 byte from specified file and converts it to float
- *
- * @param fp file pointer to read header from
- * @return float value
- */
-float read_flt(FILE *fp);
+struct data_t **read_data(FILE *wfdisc_file);
 
 #endif /* end of include guard: FORMAT_H */
 

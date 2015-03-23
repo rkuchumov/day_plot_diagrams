@@ -3,63 +3,112 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include <stdint.h>
 #include <assert.h>
 
 #include <libgen.h>
+
+#include <unistd.h>
 
 #include "utils.h"
 #include "format.h"
 #include "params.h"
 
-union u4 {
-    float f;
-    int32_t i;
-    uint32_t u;
-
-    uint8_t data[4];
-};
+#define FILES_CNT 40
 
 struct wf_t {
+    FILE *fp;
+
     char chan[9];
     float time;
-    int nstamp;
+    int nsamp;
     float samprate;
     char dir[65];
     char dfile[33];
     int foff;
 };
 
+struct data_t **read_data(FILE *wfdisc_file);
+
+struct wf_t *next_file(FILE *wfdisc_fp);
+void free_wf(struct wf_t *wf);
 char *read_wfdisc_line(FILE *wfdisc_fp);
 void parse_wfdisc_line(char *line, struct wf_t *wf);
-FILE *open_data_file(struct wf_t *wf);
+void open_data_file(struct wf_t *wf);
 int skip_data_file(struct wf_t *wf);
 
-FILE *next_file(FILE *wfdisc_fp) 
+struct data_t **read_data(FILE *wfdisc_fp)
+{
+    struct data_t **ret;
+    unsigned data_size = sizeof(struct data_t *) * FILES_CNT;
+    ret = (struct data_t **) malloc(data_size);
+    if (ret == NULL)
+        fatal_errno("malloc");
+
+    struct wf_t *wf;
+    int i = 0;
+    while ((wf = next_file(wfdisc_fp)) != NULL) {
+        if (i > FILES_CNT) {
+            data_size += sizeof(struct data_t *) * FILES_CNT;
+            ret = (struct data_t **) realloc(ret, data_size);
+            if (ret == NULL)
+                fatal_errno("malloc");
+        }
+
+        ret[i] = (struct data_t *) malloc(sizeof(struct data_t));
+        if (ret[i] == NULL)
+            fatal_errno("malloc");
+
+        ret[i]->samp_rate = wf->samprate;
+        ret[i]->samp_cnt = wf->nsamp;
+        ret[i]->time = (time_t) wf->time;
+
+        ret[i]->d = (float *) malloc(sizeof(float) * wf->nsamp);
+        if (ret[i]->d == NULL)
+            fatal_errno("malloc");
+
+        for (int j = 0; j < wf->nsamp; j++) {
+            if (feof(wf->fp))
+                fatal("unexpected EOF in %s", wf->dfile);
+
+            ret[i]->d[j] = read_int(wf->fp);
+        }
+
+        fclose(wf->fp);
+        i++;
+    }
+
+    ret[i] = NULL;
+
+    return ret;
+}
+
+struct wf_t *next_file(FILE *wfdisc_fp) 
 {
     assert(wfdisc_fp != NULL);
     assert(cfg.is_inited);
 
-    struct wf_t wf;
+    struct wf_t *wf = (struct wf_t *) malloc(sizeof(struct wf_t));
+    if (wf == NULL)
+        fatal_errno("malloc");
 
     do {
         char *line = read_wfdisc_line(wfdisc_fp);
         if (line == NULL)
             return NULL;
 
-        parse_wfdisc_line(line, &wf);
+        parse_wfdisc_line(line, wf);
 
         free(line);
 
-    } while (skip_data_file(&wf));
+    } while (skip_data_file(wf));
 
-    FILE *data_fp = open_data_file(&wf);
-    assert(data_fp != NULL);
+    open_data_file(wf);
+    assert(wf->fp != NULL);
 
-    if (fseek(data_fp, wf.foff, SEEK_SET) < 0)
+    if (fseek(wf->fp, wf->foff, SEEK_SET) < 0)
         fatal_errno("fseek");
 
-    return data_fp;
+    return wf;
 };
 
 char *read_wfdisc_line(FILE *wfdisc_fp)
@@ -109,7 +158,7 @@ void parse_wfdisc_line(char *line, struct wf_t *wf)
             "%*s ", /* load date */
         wf->chan,
         &wf->time,
-        &wf->nstamp,
+        &wf->nsamp,
         &wf->samprate,
         wf->dir,
         wf->dfile,
@@ -119,17 +168,19 @@ void parse_wfdisc_line(char *line, struct wf_t *wf)
     if (rc != 7) /* number of assigned values in sscanf */
         fatal("error while reading wfsisc file");
 
+#if 0
     debug("wfdisc line read (%zd assigned values)", rc);
     debug("chan \t= %s", wf->chan);
     debug("time \t= %17.5f", wf->time);
-    debug("nstamp \t= %d", wf->nstamp);
+    debug("nsamp \t= %d", wf->nsamp);
     debug("samprate \t= %17.5f", wf->samprate);
     debug("dir \t= %s", wf->dir);
     debug("dfile \t= %s", wf->dfile);
     debug("foff \t= %d", wf->foff);
+#endif
 }
 
-FILE *open_data_file(struct wf_t *wf)
+void open_data_file(struct wf_t *wf)
 {
     assert(cfg.is_inited);
     assert(wf != NULL);
@@ -152,11 +203,9 @@ FILE *open_data_file(struct wf_t *wf)
 
     debug("Opening data file (%s)", path);
 
-    FILE *data_fp = fopen(path, "r");
-    if (data_fp == NULL)
+    wf->fp = fopen(path, "r");
+    if (wf->fp == NULL)
         fatal_errno("fopen");
-
-    return data_fp;
 }
 
 int skip_data_file(struct wf_t *wf)
@@ -170,29 +219,9 @@ int skip_data_file(struct wf_t *wf)
     return true;
 }
 
-float read_flt(FILE *fp) 
+void free_wf(struct wf_t *wf)
 {
-    union u4 flt_u;
-    uint8_t d[4];
-
-    fread(d, 1, 4, fp);
-
-    /* flt_u.data[0] = d[3]; */
-    /* flt_u.data[1] = d[2]; */
-    /* flt_u.data[2] = d[1]; */
-    /* flt_u.data[3] = d[0]; */
-
-    flt_u.data[0] = d[0];
-    flt_u.data[1] = d[1];
-    flt_u.data[2] = d[2];
-    flt_u.data[3] = d[3];
-
-    /* debug("%#02x %#02x %#02x %#02x --> %f",  */
-    /*         flt_u.data[0],  */
-    /*         flt_u.data[1],  */
-    /*         flt_u.data[2],  */
-    /*         flt_u.data[3],  */
-    /*         flt_u.f); */
-
-    return flt_u.f;
+    if (wf->fp != NULL)
+        fclose(wf->fp);
+    wf->fp = NULL;
 }

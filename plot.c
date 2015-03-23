@@ -1,7 +1,7 @@
 #include "plot.h"
 #include "gnuplot_i.h"
 
-#define CMD_LEN 130
+#define CMD_LEN 90000
 char cmd[CMD_LEN];
 
 gnuplot_ctrl *h;
@@ -20,27 +20,40 @@ int plot_init()
             cfg.plot_line_color);
     gnuplot_cmd(h, cmd);
 
+    sprintf(cmd, "set style line 2 lc rgb \'#a00000\'");
+    gnuplot_cmd(h, cmd);
+
     sprintf(cmd, "set xrange[%d:%d]", 0, cfg.plot_period / 60);
+    gnuplot_cmd(h, cmd);
+
+    sprintf(cmd, "set notitle");
+    gnuplot_cmd(h, cmd);
+
+    sprintf(cmd, "set nokey");
     gnuplot_cmd(h, cmd);
 
     return 1;
 }
 
-int plot(char *data_file, int plot_cnt, float min, float max)
+int plot2(char **files, int plot_cnt)
 {
+    debug("Drawing plot");
+
     sprintf(cmd, "set output \"%s\"", cfg.output_file);
     gnuplot_cmd(h, cmd);
 
-    sprintf(cmd, "set yrange[%f:%f]", min, max);
-    gnuplot_cmd(h, cmd);
+    /* sprintf(cmd, "set yrange[%f:%f]", min, max); */
+    /* gnuplot_cmd(h, cmd); */
 
-    sprintf(cmd, "set multiplot layout %d,1", plot_cnt);
-    gnuplot_cmd(h, cmd);
+    /* sprintf(cmd, "set multiplot layout %d,1", plot_cnt + 1); */
+    /* gnuplot_cmd(h, cmd); */
 
-    for (int i = 2; i < plot_cnt + 2; i++) {
-        sprintf(cmd, "plot \"%s\" using 1:%d with lines ls 1", data_file, i);
-        gnuplot_cmd(h, cmd);
+    char *e = cmd;
+    e += sprintf(e, "plot ");
+    for (int i = 0; i < plot_cnt; i++) {
+        e += sprintf(e, "\"%s\" with lines ls %d, ", files[i], 1 + i % 2);
     }
+    gnuplot_cmd(h, cmd);
 
     gnuplot_close(h);
 

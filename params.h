@@ -18,12 +18,14 @@
 #define DFT_DATA_OFFSET 512
 #define DFT_DATA_TYPE FLOAT
 #define DFT_SAMPLING_RATE 50
-#define DFT_PLOT_PERIOD 900 /* 1 hr */
+#define DFT_PLOT_PERIOD 900
 
 #define DFT_AVERAGE_SIZE 50
 #define DFT_PLOT_WIDTH 900
-#define DFT_PLOT_HEIGHT 900
+#define DFT_PLOT_HEIGHT 1200
 #define DFT_PLOT_LINE_COLOR "#0060ad"
+
+#define DFT_TIMEZONE "UTC"
 
 /** Config data structure */
 struct cfg_t {
@@ -44,6 +46,8 @@ struct cfg_t {
     unsigned plot_width;
     unsigned plot_height;
     char *plot_line_color;
+
+    char *env_tz;
 
     unsigned is_inited : 1;
 } cfg;

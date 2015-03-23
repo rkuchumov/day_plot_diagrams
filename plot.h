@@ -6,7 +6,7 @@
 
 int plot_init();
 
-int plot(char *data_file, int plot_cnt, float min, float max);
+int plot2(char **files, int plot_cnt);
 
 #endif /* end of include guard: PLOT_H */
 

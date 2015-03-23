@@ -11,6 +11,17 @@ void printlog(unsigned vlevel, const char *file, int line,
 
 char *m_mktemp();
 
+/** Reads 4 byte from specified file and converts it to float
+ *
+ * @param fp file pointer to read header from
+ * @return float value
+ */
+float read_flt(FILE *fp);
+
+float read_int(FILE *fp);
+
+void set_tz(char *env_tz);
+
 #define FATAL 0
 #define DEBUG 1
 /** buffer size for log messages */

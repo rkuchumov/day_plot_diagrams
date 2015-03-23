@@ -16,10 +16,10 @@ static char doc[] =
 static char args_doc[] = "FILE";
 
 static struct argp_option options[] = {
-    {"verbose",  'v', 0,      0,  "Produce verbose output"},
-    {"debug",    'd', 0,      OPTION_ALIAS},
     {"output",   'o', "FILE", 0, "Output FILE name"},
-    {"config",   'c', "FILE", 0, "Config FILE name (default: config.ini)"},
+    {"channel",  'c', "CODE", 0, "Channel code to process data from"},
+    {"verbose",  'v', 0,      0, "Produce verbose output"},
+    {"config",   's', "FILE", 0, "Config FILE name (default: config.ini)"},
     {0}
 };
 
@@ -37,8 +37,11 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
         case 'o':
             cfg->output_file = arg;
             break;
-        case 'c':
+        case 's':
             cfg->cfg_file = arg;
+            break;
+        case 'c':
+            cfg->channel = arg;
             break;
         case ARGP_KEY_ARG:
             if (state->arg_num >= 1)
@@ -79,6 +82,8 @@ void init_cfg()
     cfg.plot_height = DFT_PLOT_HEIGHT;
     cfg.plot_line_color = DFT_PLOT_LINE_COLOR;
 
+    cfg.env_tz = DFT_TIMEZONE;
+
     cfg.is_inited = true;
 }
 
@@ -94,7 +99,8 @@ int parse_cmd_line(int argc, char *argv[])
 
     debug("Command line agruments:");
     debug("debug_out = %s", cfg.debug_out ? "yes":"no");
-    debug("input file = %s", cfg.input_file);
+    debug("wfdisc file = %s", cfg.wfdisc_file);
+    debug("channel code = %s", cfg.channel);
     debug("config file = %s", cfg.cfg_file);
     debug("output file = %s", cfg.output_file);
 

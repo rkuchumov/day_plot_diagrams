@@ -4,10 +4,20 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <assert.h>
+#include <time.h>
 
 #ifndef WIN32
 #include <unistd.h>
 #endif
+
+#include <stdint.h>
+union u4 {
+    float f;
+    int32_t i;
+    uint32_t u;
+
+    uint8_t data[4];
+};
 
 void printlog(unsigned vlevel, const char *file, int line, 
         const char *fmt, ...)
@@ -61,4 +71,69 @@ char *m_mktemp()
     close(fd);
 
     return filename;
+}
+
+float read_flt(FILE *fp) 
+{
+    union u4 flt_u;
+    uint8_t d[4];
+
+    fread(d, 1, 4, fp);
+
+    flt_u.data[0] = d[3];
+    flt_u.data[1] = d[2];
+    flt_u.data[2] = d[1];
+    flt_u.data[3] = d[0];
+
+    /* flt_u.data[0] = d[0]; */
+    /* flt_u.data[1] = d[1]; */
+    /* flt_u.data[2] = d[2]; */
+    /* flt_u.data[3] = d[3]; */
+
+    /* debug("%#02x %#02x %#02x %#02x --> %f",  */
+    /*         flt_u.data[0],  */
+    /*         flt_u.data[1],  */
+    /*         flt_u.data[2],  */
+    /*         flt_u.data[3],  */
+    /*         flt_u.f); */
+
+    /* sleep(1); */
+
+    return flt_u.i;
+}
+
+float read_int(FILE *fp) 
+{
+    union u4 int_u;
+    uint8_t d[4];
+
+    fread(d, 1, 4, fp);
+
+    int_u.data[0] = d[3];
+    int_u.data[1] = d[2];
+    int_u.data[2] = d[1];
+    int_u.data[3] = d[0];
+
+    /* int_u.data[0] = d[0]; */
+    /* int_u.data[1] = d[1]; */
+    /* int_u.data[2] = d[2]; */
+    /* int_u.data[3] = d[3]; */
+
+    /* debug("%#02x %#02x %#02x %#02x --> %f",  */
+    /*         int_u.data[0],  */
+    /*         int_u.data[1],  */
+    /*         int_u.data[2],  */
+    /*         int_u.data[3],  */
+    /*         int_u.f); */
+
+    return int_u.i;
+}
+
+void set_tz(char *env_tz)
+{
+    assert(env_tz != NULL);
+	if (setenv("TZ", env_tz, 1) < 0)
+        fatal_errno("setenv");
+
+	tzset();
 }
