@@ -84,6 +84,10 @@ void init_cfg()
 
     cfg.env_tz = DFT_TIMEZONE;
 
+    cfg.olverlap = DFT_OVERLAP;
+    cfg.plot_max_val = DFT_PLOT_MAX_VAL;
+    cfg.ytics_font_size = DFT_YTICS_FONT_SIZE;
+
     cfg.is_inited = true;
 }
 

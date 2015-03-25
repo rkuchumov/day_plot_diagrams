@@ -13,6 +13,7 @@
 #include "gnuplot_i.h"
 
 #include <time.h>
+#include <assert.h>
 
 int main(int argc, char *argv[]) {
     init_cfg();
@@ -32,8 +33,18 @@ int main(int argc, char *argv[]) {
 
     struct data_t **data = read_data(wfdisc_fp);
 
+    assert(data != NULL);
+    assert(data[0] != NULL);
+
+    struct tm *ptm = localtime(&data[0]->time);
+    ptm->tm_hour = 0;
+    ptm->tm_min = 0;
+    ptm->tm_sec = 0;
+    time_t t0 = mktime(ptm);
+
     int n = 0;
-    while(data[n] != NULL) n++;
+    while(data[n] != NULL && (data[n]->time - t0) < SEC_PER_DAY)
+        n++;
 
     float min = FLT_MAX;
     float max = -FLT_MAX;
@@ -54,38 +65,21 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    int olverlap = 3;
-    float plot_height = 100.0f;
-    float max_hight = (2.0f * olverlap + 1) * plot_height;
+    float max_hight = (2.0f * cfg.olverlap + 1) * cfg.plot_max_val;
 
     float dx = (max > -min) ? max : -min;
 
-    /* debug("min = %f, max = %f, dx = %f", min, max, dx); */
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < data[i]->samp_cnt; j++) {
-            /* nanosleep((struct timespec[]){{0, 50000000}}, NULL); */
             data[i]->d[j] = (max_hight * data[i]->d[j]) / dx;
-            /* debug("%f", data[i]->d[j]); */
         }
     }
-
-    /* debug("min = %f, max = %f, avg = %f", min, max, average); */
-
-    /* int plot_cnt = 24 * 60 * 60 / cfg.plot_period; */
-    /* debug("plot count = %d", plot_cnt); */
-
-    struct tm *ptm = localtime(&data[0]->time);
-    ptm->tm_hour = 0;
-    ptm->tm_min = 0;
-    ptm->tm_sec = 0;
-    time_t t0 = mktime(ptm);
 
     char **plot_data_files = (char **) malloc(sizeof(char *) * n);
     if (plot_data_files == NULL)
         fatal_errno("malloc");
 
     /* n = ; */
-
     for (int i = 0; i < n; i++) {
 
         plot_data_files[i] = m_mktemp();
@@ -96,7 +90,7 @@ int main(int argc, char *argv[]) {
         debug("Temprorary data file (%s) is created", plot_data_files[i]);
 
         time_t dt = data[i]->time - t0;
-        int plot_num = dt / cfg.plot_period;
+        unsigned plot_num = dt / cfg.plot_period;
 
         float t = dt - plot_num * cfg.plot_period;
         for (int j = 0; j < data[i]->samp_cnt; j++) {
@@ -104,10 +98,13 @@ int main(int argc, char *argv[]) {
                 plot_num++;
                 t = 0;
                 fprintf(data_fp, "\n");
+
+                if (plot_num >= SEC_PER_DAY / cfg.plot_period)
+                    break;
             }
 
             t += 1.0f / data[i]->samp_rate;
-            float v = data[i]->d[j] - 2.0f * plot_height * plot_num;
+            float v = data[i]->d[j] - 2.0f * cfg.plot_max_val * plot_num;
 
             fprintf(data_fp, "%f %f\n", (t / 60), v);
             /* debug("%f -> %f", t, v); */
@@ -120,6 +117,12 @@ int main(int argc, char *argv[]) {
     plot_init();
 
     plot2(plot_data_files, n);
+
+    debug("Deleting temprorary files");
+    for (int i = 0; i < n; i++) {
+        if (remove(plot_data_files[i]) < 0)
+            fatal_errno("remove");
+    }
 
     return 0;
 }

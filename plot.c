@@ -1,6 +1,8 @@
 #include "plot.h"
 #include "gnuplot_i.h"
 
+#include <time.h>
+
 #define CMD_LEN 90000
 char cmd[CMD_LEN];
 
@@ -24,6 +26,21 @@ int plot_init()
     gnuplot_cmd(h, cmd);
 
     sprintf(cmd, "set xrange[%d:%d]", 0, cfg.plot_period / 60);
+    gnuplot_cmd(h, cmd);
+
+    time_t t = 0;
+
+    char *e = cmd;
+    e += sprintf(cmd, "set ytics(\"00:00\" 0");
+    for (unsigned i = 1; i < SEC_PER_DAY / cfg.plot_period; i++) {
+        t += cfg.plot_period;
+
+        struct tm *ptm = localtime(&t);
+
+        float pos = -2.0f * i * cfg.plot_max_val;
+        e += sprintf(e, ", \"%02d:%02d\" %f", ptm->tm_hour, ptm->tm_min, pos);
+    }
+    sprintf(e, ") font \",%d\"", cfg.ytics_font_size);
     gnuplot_cmd(h, cmd);
 
     sprintf(cmd, "set notitle");
@@ -51,7 +68,8 @@ int plot2(char **files, int plot_cnt)
     char *e = cmd;
     e += sprintf(e, "plot ");
     for (int i = 0; i < plot_cnt; i++) {
-        e += sprintf(e, "\"%s\" with lines ls %d, ", files[i], 1 + i % 2);
+        /* e += sprintf(e, "\"%s\" with lines ls %d, ", files[i], 1 + i % 2); */
+        e += sprintf(e, "\"%s\" with lines ls %d, ", files[i], 1);
     }
     gnuplot_cmd(h, cmd);
 

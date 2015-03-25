@@ -23,7 +23,11 @@
 #define DFT_AVERAGE_SIZE 50
 #define DFT_PLOT_WIDTH 900
 #define DFT_PLOT_HEIGHT 1200
-#define DFT_PLOT_LINE_COLOR "#0060ad"
+#define DFT_PLOT_LINE_COLOR "#000000"
+
+#define DFT_OVERLAP 5
+#define DFT_PLOT_MAX_VAL 100.0f
+#define DFT_YTICS_FONT_SIZE 10
 
 #define DFT_TIMEZONE "UTC"
 
@@ -48,6 +52,10 @@ struct cfg_t {
     char *plot_line_color;
 
     char *env_tz;
+
+    unsigned olverlap;
+    float plot_max_val;
+    unsigned ytics_font_size;
 
     unsigned is_inited : 1;
 } cfg;

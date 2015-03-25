@@ -6,6 +6,8 @@
 #include <string.h>
 #include <errno.h>
 
+#define SEC_PER_DAY 24 * 60 * 60
+
 void printlog(unsigned vlevel, const char *file, int line, 
         const char *fmt, ...);
 
