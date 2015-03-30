@@ -19,7 +19,7 @@ struct wf_t {
     FILE *fp;
 
     char chan[9];
-    float time;
+    double time;
     int nsamp;
     float samprate;
     char dir[65];
@@ -138,7 +138,7 @@ void parse_wfdisc_line(char *line, struct wf_t *wf)
     size_t rc = sscanf(line, 
             "%*s " /* station code */
             "%s "  /* channel code */
-            "%f "  /* epoch time of first sample in file */
+            "%lf "  /* epoch time of first sample in file */
             "%*d " /* waveform identifier */
             "%*d " /* channel identifier */
             "%*d " /* julian date */
@@ -168,7 +168,9 @@ void parse_wfdisc_line(char *line, struct wf_t *wf)
     if (rc != 7) /* number of assigned values in sscanf */
         fatal("error while reading wfsisc file");
 
+
 #if 0
+    /* debug("%s", line); */
     debug("wfdisc line read (%zd assigned values)", rc);
     debug("chan \t= %s", wf->chan);
     debug("time \t= %17.5f", wf->time);
@@ -177,6 +179,7 @@ void parse_wfdisc_line(char *line, struct wf_t *wf)
     debug("dir \t= %s", wf->dir);
     debug("dfile \t= %s", wf->dfile);
     debug("foff \t= %d", wf->foff);
+    /* sleep(3); */
 #endif
 }
 
@@ -201,7 +204,7 @@ void open_data_file(struct wf_t *wf)
     strcpy(tmp, wf->dfile);
     e += sprintf(e, "%s", basename(tmp));
 
-    debug("Opening data file (%s)", path);
+    debug("Parsing data file (%s)", path);
 
     wf->fp = fopen(path, "r");
     if (wf->fp == NULL)

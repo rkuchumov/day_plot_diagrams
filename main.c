@@ -50,18 +50,34 @@ int main(int argc, char *argv[]) {
     float max = -FLT_MAX;
 
     for (int i = 0; i < n; i++) {
-        float avg = 0;
+        double avg = 0;
         for (int j = 0; j < data[i]->samp_cnt; j++)
             avg += data[i]->d[j] / data[i]->samp_cnt;
 
         for (int j = 0; j < data[i]->samp_cnt; j++) {
             data[i]->d[j] -= avg;
-            float v = data[i]->d[j];
+        }
 
-            if (v > max)
-                max = v;
-            if (v < min)
-                min = v;
+        int n_eps = (cfg.plot_period / cfg.rot_eps) * data[i]->samp_rate;
+        if (data[i]->samp_cnt < n_eps)
+            n_eps = data[i]->samp_cnt;
+        double left_avg = 0;
+        double right_avg = 0;
+        for (int j = 0; j < n_eps; j++) {
+            left_avg += data[i]->d[j] / n_eps;
+            right_avg += data[i]->d[data[i]->samp_cnt - j] / n_eps;
+        }
+
+        double t1 = (double )data[i]->samp_cnt / data[i]->samp_rate;
+        double t = 0.0f;
+
+        for (int j = 0; j < data[i]->samp_cnt; j++) {
+            t += 1.0f / data[i]->samp_rate;
+            data[i]->d[j] += t * (left_avg - right_avg) / t1 - left_avg;
+
+            float v = data[i]->d[j];
+            if (v > max) max = v;
+            if (v < min) min = v;
         }
     }
 
@@ -79,7 +95,6 @@ int main(int argc, char *argv[]) {
     if (plot_data_files == NULL)
         fatal_errno("malloc");
 
-    /* n = ; */
     for (int i = 0; i < n; i++) {
 
         plot_data_files[i] = m_mktemp();
@@ -87,12 +102,12 @@ int main(int argc, char *argv[]) {
         if (data_fp == NULL)
             fatal_errno("fopen");
 
-        debug("Temprorary data file (%s) is created", plot_data_files[i]);
+        debug("Temprorary plot data file (%s) is created", plot_data_files[i]);
 
         time_t dt = data[i]->time - t0;
         unsigned plot_num = dt / cfg.plot_period;
 
-        float t = dt - plot_num * cfg.plot_period;
+        double t = (double) dt - plot_num * cfg.plot_period;
         for (int j = 0; j < data[i]->samp_cnt; j++) {
             if (t > cfg.plot_period) {
                 plot_num++;
@@ -106,7 +121,7 @@ int main(int argc, char *argv[]) {
             t += 1.0f / data[i]->samp_rate;
             float v = data[i]->d[j] - 2.0f * cfg.plot_max_val * plot_num;
 
-            fprintf(data_fp, "%f %f\n", (t / 60), v);
+            fprintf(data_fp, "%lf %f\n", (t / 60), v);
             /* debug("%f -> %f", t, v); */
             /* nanosleep((struct timespec[]){{0, 50000000}}, NULL); */
         }

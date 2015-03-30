@@ -7,7 +7,7 @@
 struct data_t {
     float *d;
     int samp_cnt;
-    float samp_rate;
+    double samp_rate;
     time_t time;
 };
 

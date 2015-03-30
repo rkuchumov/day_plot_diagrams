@@ -18,8 +18,9 @@ static char args_doc[] = "FILE";
 static struct argp_option options[] = {
     {"output",   'o', "FILE", 0, "Output FILE name"},
     {"channel",  'c', "CODE", 0, "Channel code to process data from"},
+    {"olverlap", 'l', "NUM",  0, "Number of adjacent plots that can be olverlaped"},
     {"verbose",  'v', 0,      0, "Produce verbose output"},
-    {"config",   's', "FILE", 0, "Config FILE name (default: config.ini)"},
+    /* {"config",   's', "FILE", 0, "Config FILE name (default: config.ini)"}, */
     {0}
 };
 
@@ -29,6 +30,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
     /* Get the input argument from argp_parse, which we
        know is a pointer to our arguments structure. */
     struct cfg_t *cfg = state->input;
+    int v;
 
     switch (key) {
         case 'v': case 'd':
@@ -42,6 +44,11 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
             break;
         case 'c':
             cfg->channel = arg;
+            break;
+        case 'l':
+            v = atoi(arg);
+            if (v > 0)
+                cfg->olverlap = v;
             break;
         case ARGP_KEY_ARG:
             if (state->arg_num >= 1)
@@ -87,6 +94,7 @@ void init_cfg()
     cfg.olverlap = DFT_OVERLAP;
     cfg.plot_max_val = DFT_PLOT_MAX_VAL;
     cfg.ytics_font_size = DFT_YTICS_FONT_SIZE;
+    cfg.rot_eps = DFT_ROT_EPS;
 
     cfg.is_inited = true;
 }
