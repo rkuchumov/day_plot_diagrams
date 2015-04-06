@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <time.h>
 
 #define SEC_PER_DAY 24 * 60 * 60
 
@@ -23,6 +24,9 @@ float read_flt(FILE *fp);
 float read_int(FILE *fp);
 
 void set_tz(char *env_tz);
+
+time_t day_start(time_t t);
+
 
 #define FATAL 0
 #define DEBUG 1

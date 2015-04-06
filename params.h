@@ -28,6 +28,10 @@
 #define DFT_OVERLAP 5
 #define DFT_PLOT_MAX_VAL 100.0f
 #define DFT_YTICS_FONT_SIZE 10
+#define DFT_ROT_EPS 50
+#define DFT_STATION_NAME NULL
+#define DFT_DATE NULL
+#define DFT_CUTOFF_FREQ 50
 
 #define DFT_TIMEZONE "UTC"
 
@@ -43,7 +47,7 @@ struct cfg_t {
 
     unsigned data_offset;
     unsigned data_type;
-    unsigned sampling_rate;
+    unsigned samp_rate;
 
     unsigned plot_period;
     unsigned avg_cnt; // TODO rename
@@ -51,11 +55,17 @@ struct cfg_t {
     unsigned plot_height;
     char *plot_line_color;
 
+    unsigned cutoff_freq;
+
     char *env_tz;
 
     unsigned olverlap;
     float plot_max_val;
     unsigned ytics_font_size;
+    unsigned rot_eps;
+
+    char *date;
+    char *station_name;
 
     unsigned is_inited : 1;
 } cfg;

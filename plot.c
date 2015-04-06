@@ -1,17 +1,25 @@
 #include "plot.h"
+
+#include "params.h"
+#include "utils.h"
+#include "format.h"
 #include "gnuplot_i.h"
+
 #include <stdlib.h>
+#include <assert.h>
 
 #include <time.h>
+
+char **creat_plot_files(struct data_t **data, int n);
+gnuplot_ctrl *init();
+void draw(gnuplot_ctrl *h, char **files, int plot_cnt);
 
 #define CMD_LEN 90000
 char cmd[CMD_LEN];
 
-gnuplot_ctrl *h;
-
-int plot_init()
+gnuplot_ctrl *init()
 {
-    h = gnuplot_init();
+    gnuplot_ctrl *h = gnuplot_init();
     if (h == NULL)
         fatal("gnuplot init failed");
 
@@ -70,10 +78,25 @@ int plot_init()
     sprintf(cmd, "set nokey");
     gnuplot_cmd(h, cmd);
 
-    return 1;
+    assert(cfg.date != NULL);
+    sprintf(cmd, "set label \"Date: %s\" left at graph 0, screen 0.95", cfg.date);
+    gnuplot_cmd(h, cmd);
+
+    assert(cfg.date != NULL);
+    sprintf(cmd, "set label \"Channel: %s\" left at graph 0, screen 0.97", cfg.channel);
+    gnuplot_cmd(h, cmd);
+
+    assert(cfg.date != NULL);
+    sprintf(cmd, "set label \"Station: %s\" left at graph 0, screen 0.99", cfg.station_name);
+    gnuplot_cmd(h, cmd);
+
+    sprintf(cmd, "set tmargin 4");
+    gnuplot_cmd(h, cmd);
+
+    return h;
 }
 
-int plot2(char **files, int plot_cnt)
+void draw(gnuplot_ctrl *h, char **files, int plot_cnt)
 {
     debug("Drawing plot");
 
@@ -89,6 +112,64 @@ int plot2(char **files, int plot_cnt)
     gnuplot_cmd(h, cmd);
 
     gnuplot_close(h);
+}
 
-    return 1;
+char **creat_plot_files(struct data_t **data, int n)
+{
+    time_t t0 = day_start(data[0]->time);
+
+    char **plot_data_files = (char **) malloc(sizeof(char *) * n);
+    if (plot_data_files == NULL)
+        fatal_errno("malloc");
+
+    for (int i = 0; i < n; i++) {
+
+        plot_data_files[i] = m_mktemp();
+        FILE *data_fp = fopen(plot_data_files[i], "w");
+        if (data_fp == NULL)
+            fatal_errno("fopen");
+
+        debug("Temprorary plot data file (%s) is created", plot_data_files[i]);
+
+        time_t dt = data[i]->time - t0;
+        unsigned plot_num = dt / cfg.plot_period;
+
+        double t = (double) dt - plot_num * cfg.plot_period;
+        for (int j = 0; j < data[i]->samp_cnt; j++) {
+            if (t > cfg.plot_period) {
+                plot_num++;
+                t = 0;
+                fprintf(data_fp, "\n");
+
+                if (plot_num >= SEC_PER_DAY / cfg.plot_period)
+                    break;
+            }
+
+            t += 1.0f / cfg.samp_rate;
+            float v = data[i]->d[j] - 2.0f * cfg.plot_max_val * plot_num;
+
+            fprintf(data_fp, "%lf %f\n", (t / 60), v);
+            /* debug("%f -> %f", t, v); */
+            /* nanosleep((struct timespec[]){{0, 50000000}}, NULL); */
+        }
+
+        fclose(data_fp);
+    }
+
+    return plot_data_files;
+}
+
+void plot(struct data_t **data, int n) {
+    char **tmp_files = creat_plot_files(data, n);
+    assert(tmp_files != NULL);
+
+    gnuplot_ctrl *h = init();
+
+    draw(h, tmp_files, n);
+
+    debug("Deleting temprorary files");
+    for (int i = 0; i < n; i++) {
+        if (remove(tmp_files[i]) < 0)
+            fatal_errno("remove");
+    }
 }

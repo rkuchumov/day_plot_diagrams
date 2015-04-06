@@ -137,3 +137,12 @@ void set_tz(char *env_tz)
 
 	tzset();
 }
+
+time_t day_start(time_t t)
+{
+    struct tm *ptm = localtime(&t);
+    ptm->tm_hour = 0;
+    ptm->tm_min = 0;
+    ptm->tm_sec = 0;
+    return mktime(ptm);
+}

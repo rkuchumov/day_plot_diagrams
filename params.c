@@ -16,10 +16,11 @@ static char doc[] =
 static char args_doc[] = "FILE";
 
 static struct argp_option options[] = {
-    {"output",   'o', "FILE", 0, "Output FILE name"},
-    {"channel",  'c', "CODE", 0, "Channel code to process data from"},
-    {"olverlap", 'l', "NUM",  0, "Number of adjacent plots that can be olverlaped"},
-    {"verbose",  'v', 0,      0, "Produce verbose output"},
+    {"output",   'o', "FILE",      0, "Output FILE name"},
+    {"channel",  'c', "CODE",      0, "Channel code to process data from"},
+    {"olverlap", 'l', "NUM",       0, "Number of adjacent plots that can be olverlaped"},
+    {"verbose",  'v', 0,           0, "Produce verbose output"},
+    {"cutoff",   'f', "FREQUENCY", 0, "Butterworth filter cutt-off frequency"},
     /* {"config",   's', "FILE", 0, "Config FILE name (default: config.ini)"}, */
     {0}
 };
@@ -49,6 +50,11 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
             v = atoi(arg);
             if (v > 0)
                 cfg->olverlap = v;
+            break;
+        case 'f':
+            v = atoi(arg);
+            if (v > 0)
+                cfg->cutoff_freq = v;
             break;
         case ARGP_KEY_ARG:
             if (state->arg_num >= 1)
@@ -82,7 +88,7 @@ void init_cfg()
 
     cfg.data_offset = DFT_DATA_OFFSET;
     cfg.data_type = DFT_DATA_TYPE;
-    cfg.sampling_rate = DFT_SAMPLING_RATE;
+    cfg.samp_rate = DFT_SAMPLING_RATE;
     cfg.plot_period = DFT_PLOT_PERIOD;
     cfg.avg_cnt = DFT_AVERAGE_SIZE;
     cfg.plot_width = DFT_PLOT_WIDTH;
@@ -95,6 +101,10 @@ void init_cfg()
     cfg.plot_max_val = DFT_PLOT_MAX_VAL;
     cfg.ytics_font_size = DFT_YTICS_FONT_SIZE;
     cfg.rot_eps = DFT_ROT_EPS;
+    cfg.date = DFT_DATE;
+    cfg.station_name = DFT_STATION_NAME;
+
+    cfg.cutoff_freq = DFT_CUTOFF_FREQ;
 
     cfg.is_inited = true;
 }

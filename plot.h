@@ -1,12 +1,9 @@
 #ifndef PLOT_H
 #define PLOT_H
 
-#include "utils.h"
-#include "params.h"
+#include "format.h"
 
-int plot_init();
-
-int plot2(char **files, int plot_cnt);
+void plot(struct data_t **data, int n);
 
 #endif /* end of include guard: PLOT_H */
 

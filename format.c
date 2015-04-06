@@ -18,6 +18,7 @@
 struct wf_t {
     FILE *fp;
 
+    char sta[7];
     char chan[9];
     double time;
     int nsamp;
@@ -71,6 +72,13 @@ struct data_t **read_data(FILE *wfdisc_fp)
                 fatal("unexpected EOF in %s", wf->dfile);
 
             ret[i]->d[j] = read_int(wf->fp);
+        }
+
+        if (cfg.station_name == NULL) {
+            if (NULL == (cfg.station_name = malloc(sizeof(wf->sta))))
+                fatal_errno("malloc");
+
+            strcpy(cfg.station_name, wf->sta);
         }
 
         fclose(wf->fp);
@@ -136,7 +144,7 @@ void parse_wfdisc_line(char *line, struct wf_t *wf)
     assert(cfg.is_inited);
 
     size_t rc = sscanf(line, 
-            "%*s " /* station code */
+            "%s " /* station code */
             "%s "  /* channel code */
             "%lf "  /* epoch time of first sample in file */
             "%*d " /* waveform identifier */
@@ -156,6 +164,7 @@ void parse_wfdisc_line(char *line, struct wf_t *wf)
             "%d "  /* byte offset of data seg ment within file */
             "%*d " /* comment identifier */
             "%*s ", /* load date */
+        wf->sta,
         wf->chan,
         &wf->time,
         &wf->nsamp,
@@ -165,8 +174,9 @@ void parse_wfdisc_line(char *line, struct wf_t *wf)
         &wf->foff
             );
 
-    if (rc != 7) /* number of assigned values in sscanf */
+    if (rc != 8) /* number of assigned values in sscanf */
         fatal("error while reading wfsisc file");
+
 
 
 #if 0
