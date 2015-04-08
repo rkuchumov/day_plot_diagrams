@@ -18,9 +18,10 @@ static char args_doc[] = "FILE";
 static struct argp_option options[] = {
     {"output",   'o', "FILE",      0, "Output FILE name"},
     {"channel",  'c', "CODE",      0, "Channel code to process data from"},
-    {"olverlap", 'l', "NUM",       0, "Number of adjacent plots that can be olverlaped"},
+    {"olverlap", 'p', "NUM",       0, "Number of adjacent plots that can be olverlaped"},
     {"verbose",  'v', 0,           0, "Produce verbose output"},
-    {"cutoff",   'f', "FREQUENCY", 0, "Butterworth filter cutt-off frequency"},
+    {"lowcut",   'l', "FREQUENCY", 0, "Butterworth bandpass lower cutoff frequency"},
+    {"highcut",  'h', "FREQUENCY", 0, "Butterworth bandpass higher cutoff frequency"},
     /* {"config",   's', "FILE", 0, "Config FILE name (default: config.ini)"}, */
     {0}
 };
@@ -32,6 +33,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
        know is a pointer to our arguments structure. */
     struct cfg_t *cfg = state->input;
     int v;
+    double d;
 
     switch (key) {
         case 'v': case 'd':
@@ -46,15 +48,20 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
         case 'c':
             cfg->channel = arg;
             break;
-        case 'l':
+        case 'p':
             v = atoi(arg);
             if (v > 0)
                 cfg->olverlap = v;
             break;
-        case 'f':
-            v = atoi(arg);
-            if (v > 0)
-                cfg->cutoff_freq = v;
+        case 'l':
+            d = strtod(arg, NULL);
+            if (d > 0)
+                cfg->lowcut = d;
+            break;
+        case 'h':
+            d = strtod(arg, NULL);
+            if (d > 0)
+                cfg->highcut = d;
             break;
         case ARGP_KEY_ARG:
             if (state->arg_num >= 1)
@@ -104,7 +111,9 @@ void init_cfg()
     cfg.date = DFT_DATE;
     cfg.station_name = DFT_STATION_NAME;
 
-    cfg.cutoff_freq = DFT_CUTOFF_FREQ;
+    cfg.lowcut = DFT_LOWCUT;
+    cfg.highcut = DFT_HIGHCUT;
+    cfg.butter_order = DFT_BUTTER_ORDER;
 
     cfg.is_inited = true;
 }
@@ -119,12 +128,17 @@ int parse_cmd_line(int argc, char *argv[])
 {
     argp_parse (&argp, argc, argv, 0, 0, &cfg);
 
+    if (cfg.lowcut * cfg.highcut < 0.0f)
+        fatal("You should specify both high and low cutoff frequency");
+
     debug("Command line agruments:");
     debug("debug_out = %s", cfg.debug_out ? "yes":"no");
     debug("wfdisc file = %s", cfg.wfdisc_file);
     debug("channel code = %s", cfg.channel);
     debug("config file = %s", cfg.cfg_file);
     debug("output file = %s", cfg.output_file);
+    debug("lowcut freq = %lf", cfg.lowcut);
+    debug("highcut freq = %lf", cfg.highcut);
 
     return 1;
 }

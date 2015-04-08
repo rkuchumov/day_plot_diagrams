@@ -31,7 +31,10 @@
 #define DFT_ROT_EPS 50
 #define DFT_STATION_NAME NULL
 #define DFT_DATE NULL
-#define DFT_CUTOFF_FREQ 50
+
+#define DFT_LOWCUT -1.0f
+#define DFT_HIGHCUT -1.0f
+#define DFT_BUTTER_ORDER 4
 
 #define DFT_TIMEZONE "UTC"
 
@@ -55,7 +58,9 @@ struct cfg_t {
     unsigned plot_height;
     char *plot_line_color;
 
-    unsigned cutoff_freq;
+    double lowcut;
+    double highcut;
+    int butter_order;
 
     char *env_tz;
 

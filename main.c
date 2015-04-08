@@ -56,8 +56,8 @@ int main(int argc, char *argv[]) {
     while(data[n] != NULL && (data[n]->time - t0) < SEC_PER_DAY)
         n++;
 
-    if (cfg.cutoff_freq != cfg.samp_rate)
-        butterworth_filter(data, n);
+    if (cfg.highcut > 0 && cfg.lowcut > 0)
+        butterworth_bandpass(data, n);
 
     slope(data, n);
 
