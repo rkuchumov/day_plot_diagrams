@@ -22,6 +22,7 @@ static struct argp_option options[] = {
     {"verbose",  'v', 0,           0, "Produce verbose output"},
     {"lowcut",   'l', "FREQUENCY", 0, "Butterworth bandpass lower cutoff frequency"},
     {"highcut",  'h', "FREQUENCY", 0, "Butterworth bandpass higher cutoff frequency"},
+    {"order",    'd', "NUM",       0, "Butterworth bandpass filter order"},
     /* {"config",   's', "FILE", 0, "Config FILE name (default: config.ini)"}, */
     {0}
 };
@@ -36,7 +37,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
     double d;
 
     switch (key) {
-        case 'v': case 'd':
+        case 'v':
             cfg->debug_out = true;
             break;
         case 'o':
@@ -62,6 +63,11 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
             d = strtod(arg, NULL);
             if (d > 0)
                 cfg->highcut = d;
+            break;
+        case 'd':
+            v = atoi(arg);
+            if (v > 0)
+                cfg->butter_order = v;
             break;
         case ARGP_KEY_ARG:
             if (state->arg_num >= 1)
@@ -130,6 +136,12 @@ int parse_cmd_line(int argc, char *argv[])
 
     if (cfg.lowcut * cfg.highcut < 0.0f)
         fatal("You should specify both high and low cutoff frequency");
+
+    if (cfg.lowcut >= cfg.highcut)
+        fatal("Incorrect cutoff frequency");
+
+    if (cfg.butter_order % 4 != 0)
+        fatal("Butterworth filter order should be 4,8,12,16,...");
 
     debug("Command line agruments:");
     debug("debug_out = %s", cfg.debug_out ? "yes":"no");

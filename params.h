@@ -60,7 +60,7 @@ struct cfg_t {
 
     double lowcut;
     double highcut;
-    int butter_order;
+    unsigned butter_order;
 
     char *env_tz;
 
