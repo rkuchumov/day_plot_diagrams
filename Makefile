@@ -1,11 +1,10 @@
 SHELL = /bin/sh
 
 CC = gcc
-# CFLAGS = -Wall -Wextra -pedantic-g
-CFLAGS = -Wall -Wextra -Wno-missing-field-initializers -g
+CFLAGS = -Wall -Wextra -Wno-missing-field-initializers -O3
 ALL_FLAGS = -std=gnu99 -lm
 
-TARGET = main
+TARGET = geodiagrams
 
 OBJS_DIR = build
 
@@ -30,21 +29,11 @@ clean:
 	rm $(TARGET) 2>/dev/null || true
 	rm $(OBJS) 2>/dev/null || true
 	rm -rd $(OBJS_DIR) 2>/dev/null || true
-	# rm .depend 2>/dev/null || true
+	rm .depend 2>/dev/null || true
 
 .PHONY: depend dep
 depend dep:
 	$(CXX) -E -MM $(SRCS) |\
 		sed 's/^[a-zA-Z_0-9]*.o/$(OBJS_DIR)\/&/' > .depend
-
-.PHONY: docs
-docs:
-	doxygen docs/config
-
-.PHONY: run
-run: all
-	./$(TARGET) -v ./test/data.wfdisc
-	# ./$(TARGET) -v ./test/02092014-000000-MHN.6I36
-	# ./$(TARGET) -v ./test/02092014-000000-MHZ.6I36
 
 -include .depend

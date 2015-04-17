@@ -137,7 +137,7 @@ int parse_cmd_line(int argc, char *argv[])
     if (cfg.lowcut * cfg.highcut < 0.0f)
         fatal("You should specify both high and low cutoff frequency");
 
-    if (cfg.lowcut >= cfg.highcut)
+    if (cfg.lowcut > cfg.highcut)
         fatal("Incorrect cutoff frequency");
 
     if (cfg.butter_order % 4 != 0)
