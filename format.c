@@ -46,7 +46,7 @@ struct data_t **read_data(FILE *wfdisc_fp)
     struct wf_t *wf;
     int i = 0;
     while ((wf = next_file(wfdisc_fp)) != NULL) {
-        if (i > FILES_CNT) {
+        if (i * sizeof(struct data_t *) >= data_size) {
             data_size += sizeof(struct data_t *) * FILES_CNT;
             ret = (struct data_t **) realloc(ret, data_size);
             if (ret == NULL)
@@ -80,6 +80,8 @@ struct data_t **read_data(FILE *wfdisc_fp)
         }
 
         fclose(wf->fp);
+        free(wf);
+
         i++;
     }
 

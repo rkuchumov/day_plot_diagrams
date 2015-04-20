@@ -171,5 +171,8 @@ void plot(struct data_t **data, int n) {
     for (int i = 0; i < n; i++) {
         if (remove(tmp_files[i]) < 0)
             fatal_errno("remove");
+
+        free(tmp_files[i]);
     }
+    free(tmp_files);
 }

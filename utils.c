@@ -60,7 +60,7 @@ char *m_mktemp()
 #ifndef WIN32
     static char const *template = "/tmp/geodiagrams_XXXXXX";
 #else
-    static char const *template = "geodiagrams_XXXXXX";
+    static char const *template = "geodiagrams_aXXXXXX";
 #endif
 
     int len = strlen(template);
@@ -78,8 +78,15 @@ char *m_mktemp()
 
     close(fd);
 #else
-    if (_mktemp(filename) == NULL)
-        fatal_errno("_mktemp");
+again:
+    if (_mktemp(filename) == NULL) {
+        if (errno != EEXIST)
+            fatal_errno("_mktemp");
+
+        strcpy(filename, template);
+        filename[strlen(template) - 7]++;
+        goto again;
+    }
 #endif
 
     return filename;
