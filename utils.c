@@ -125,7 +125,9 @@ void set_tz(char *env_tz)
 
     if (putenv(str) != 0)
         fatal_errno("putenv");
-    free(str);
+
+    /* nope, don't free it */
+    /* free(str); */
 
 	tzset();
 }
@@ -149,9 +151,8 @@ size_t m_getline(char **lineptr, size_t *n, FILE *stream) {
     size_t size = *n;
 
     int c = fgetc(stream);
-    if (c == EOF) {
+    if (c == EOF)
         return -1;
-    }
 
     if (bufptr == NULL) {
         if ((bufptr = malloc(128)) == NULL)
@@ -165,6 +166,7 @@ size_t m_getline(char **lineptr, size_t *n, FILE *stream) {
             size += 128;
             if ((bufptr = realloc(bufptr, size)) == NULL)
                 fatal_errno("realloc");
+            p = bufptr + size - 128;
         }
         *p++ = c;
         if (c == '\n')
