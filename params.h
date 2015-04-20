@@ -1,8 +1,6 @@
 #ifndef PARAMS_H
 #define PARAMS_H
 
-#define FLOAT 1
-
 #define DFT_DEBUG_OUT 0
 
 #define DFT_CFG_FILE "config.ini"
@@ -13,12 +11,9 @@
 
 #define DFT_CHANNEL "MHZ"
 
-#define DFT_DATA_OFFSET 512
-#define DFT_DATA_TYPE FLOAT
 #define DFT_SAMPLING_RATE 50
 #define DFT_PLOT_PERIOD 900
 
-#define DFT_AVERAGE_SIZE 50
 #define DFT_PLOT_WIDTH 900
 #define DFT_PLOT_HEIGHT 1200
 #define DFT_PLOT_LINE_COLOR "#000000"
@@ -46,12 +41,9 @@ struct cfg_t {
     char *wfdisc_file;
     char *channel;
 
-    unsigned data_offset;
-    unsigned data_type;
     unsigned samp_rate;
 
     unsigned plot_period;
-    unsigned avg_cnt; // TODO rename
     unsigned plot_width;
     unsigned plot_height;
     char *plot_line_color;

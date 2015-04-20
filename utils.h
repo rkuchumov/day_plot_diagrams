@@ -13,9 +13,6 @@
 #define PATH_MAX 4096
 #endif
 
-#define HAVE_SETENV _BSD_SOURCE || _POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600
-#define HAVE_GETLINE _POSIX_C_SOURCE >= 200809L || _XOPEN_SOURCE >= 700
-
 void printlog(unsigned vlevel, const char *file, int line, 
         const char *fmt, ...);
 
@@ -34,9 +31,7 @@ void set_tz(char *env_tz);
 
 time_t day_start(time_t t);
 
-#if !(HAVE_GETLINE)
-size_t getline(char **lineptr, size_t *n, FILE *stream);
-#endif
+size_t m_getline(char **lineptr, size_t *n, FILE *stream);
 
 #define FATAL 0
 #define DEBUG 1

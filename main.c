@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
     cfg.date = malloc(DATE_SIZE);
     if (cfg.date == NULL)
         fatal_errno("malloc");
-    strftime(cfg.date, DATE_SIZE, "%F", ptm);
+    strftime(cfg.date, DATE_SIZE, "%Y-%m-%d", ptm);
 
     int n = 0;
     while(data[n] != NULL && (data[n]->time - t0) < SEC_PER_DAY)

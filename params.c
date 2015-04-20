@@ -58,11 +58,8 @@ void init_cfg()
     cfg.wfdisc_file = DFT_WFDISC_FILE;
     cfg.channel = DFT_CHANNEL;
 
-    cfg.data_offset = DFT_DATA_OFFSET;
-    cfg.data_type = DFT_DATA_TYPE;
     cfg.samp_rate = DFT_SAMPLING_RATE;
     cfg.plot_period = DFT_PLOT_PERIOD;
-    cfg.avg_cnt = DFT_AVERAGE_SIZE;
     cfg.plot_width = DFT_PLOT_WIDTH;
     cfg.plot_height = DFT_PLOT_HEIGHT;
     cfg.plot_line_color = DFT_PLOT_LINE_COLOR;

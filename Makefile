@@ -1,7 +1,7 @@
 SHELL = /bin/sh
 
 CC = gcc
-CFLAGS = -Wall -Wextra -Wno-missing-field-initializers -O3
+CFLAGS = -Wno-missing-field-initializers -O3
 ALL_FLAGS = -std=gnu99 -lm
 
 TARGET = geodiagrams
@@ -16,7 +16,11 @@ all: objs_dir $(TARGET)
 
 .PHONY: objs_dir
 objs_dir: 
+ifdef SystemRoot
+	if not exist $(OBJS_DIR) mkdir $(OBJS_DIR)
+else
 	mkdir -p $(OBJS_DIR)
+endif
 
 $(TARGET): $(OBJS) 
 	$(CC) $(ALL_FLAGS) $(CFLAGS) $(OBJS) $(LDFLAGS) -o $@

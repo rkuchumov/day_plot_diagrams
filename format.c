@@ -125,11 +125,11 @@ char *read_wfdisc_line(FILE *wfdisc_fp)
 	char *line = NULL;
 	size_t len = 0;
 	ssize_t rc;
-	if ((rc = getline(&line, &len, wfdisc_fp)) <= 0) {
+	if ((rc = m_getline(&line, &len, wfdisc_fp)) <= 0) {
         if (feof(wfdisc_fp))
             return NULL;
 
-        fatal_errno("getline");
+        fatal("m_getline() error");
     }
 
     return line;
