@@ -3,7 +3,6 @@
 
 #include "format.h"
 
-
 void butterworth_bandpass(struct data_t **data, int n);
 
 void slope(struct data_t **data, int n);

@@ -1,8 +1,6 @@
 #ifndef PARAMS_H
 #define PARAMS_H
 
-#include <argp.h>
-
 #define FLOAT 1
 
 #define DFT_DEBUG_OUT 0
@@ -40,7 +38,7 @@
 
 /** Config data structure */
 struct cfg_t {
-    unsigned debug_out : 1;
+    unsigned debug_out;
     char *cfg_file;
     char *output_file;
     char *input_file;

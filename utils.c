@@ -132,8 +132,21 @@ float read_int(FILE *fp)
 void set_tz(char *env_tz)
 {
     assert(env_tz != NULL);
+#if HAVE_SETENV 
 	if (setenv("TZ", env_tz, 1) < 0)
         fatal_errno("setenv");
+#else 
+    int len = strlen("TZ") + 1 + strlen(env_tz) + 1; 
+    char *str = malloc(len); 
+    if (str == NULL)
+        fatal_errno("malloc");
+
+    sprintf(str, "TZ=%s", env_tz); 
+
+    if (putenv(str) != 0)
+        fatal_errno("putenv");
+    free(str);
+#endif
 
 	tzset();
 }
@@ -146,3 +159,57 @@ time_t day_start(time_t t)
     ptm->tm_sec = 0;
     return mktime(ptm);
 }
+
+#if !(HAVE_GETLINE)
+size_t getline(char **lineptr, size_t *n, FILE *stream) {
+    char *bufptr = NULL;
+    char *p = bufptr;
+    size_t size;
+    int c;
+
+    if (lineptr == NULL) {
+        return -1;
+    }
+    if (stream == NULL) {
+        return -1;
+    }
+    if (n == NULL) {
+        return -1;
+    }
+    bufptr = *lineptr;
+    size = *n;
+
+    c = fgetc(stream);
+    if (c == EOF) {
+        return -1;
+    }
+    if (bufptr == NULL) {
+        bufptr = malloc(128);
+        if (bufptr == NULL) {
+            return -1;
+        }
+        size = 128;
+    }
+    p = bufptr;
+    while(c != EOF) {
+        if ((p - bufptr) > (long)(size - 1)) {
+            size = size + 128;
+            bufptr = realloc(bufptr, size);
+            if (bufptr == NULL) {
+                return -1;
+            }
+        }
+        *p++ = c;
+        if (c == '\n') {
+            break;
+        }
+        c = fgetc(stream);
+    }
+
+    *p++ = '\0';
+    *lineptr = bufptr;
+    *n = size;
+
+    return p - bufptr - 1;
+}
+#endif

@@ -7,8 +7,6 @@
 
 #include <libgen.h>
 
-#include <unistd.h>
-
 #include "utils.h"
 #include "format.h"
 #include "params.h"

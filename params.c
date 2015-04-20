@@ -4,91 +4,50 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-const char *argp_program_version =
-"main 1.0";
+#include <getopt.h>
+#include <libgen.h>
 
-const char *argp_program_bug_address =
-"<kuchumovri@gmail.com>";
+void usage(char **argv) {
+    printf("Usage: %s [OPTION...] FILE\n", basename(argv[0]));
+    printf("%s -- CSS data visuzlization\n", basename(argv[0]));
+    printf("\n");
+    printf("  -c, --channel=CODE         Channel code to process data from\n");
+    printf("  -d, --order=NUM            Butterworth bandpass filter order\n");
+    printf("  -H, --highcut=FREQUENCY    Butterworth bandpass higher cutoff frequency\n");
+    printf("  -L, --lowcut=FREQUENCY     Butterworth bandpass lower cutoff frequency\n");
+    printf("  -o, --output=FILE          Output FILE name\n");
+    printf("  -p, --olverlap=NUM         Number of adjacent plots that can be olverlaped\n");
+    printf("  -v, --verbose              Produce verbose output\n");
+    printf("  -h, --help, --usage        Give this help list\n");
+    printf("  -V, --version              Print program version\n");
+    printf("\n");
+    printf("Mandatory or optional arguments to long options are also mandatory or optional\n");
+    printf("for any corresponding short options.\n");
+    printf("\n");
+    printf("Report bugs to <kuchumovri@gmail.com>.\n");
 
-static char doc[] =
-"main -- program description";
-
-static char args_doc[] = "FILE";
-
-static struct argp_option options[] = {
-    {"output",   'o', "FILE",      0, "Output FILE name"},
-    {"channel",  'c', "CODE",      0, "Channel code to process data from"},
-    {"olverlap", 'p', "NUM",       0, "Number of adjacent plots that can be olverlaped"},
-    {"verbose",  'v', 0,           0, "Produce verbose output"},
-    {"lowcut",   'l', "FREQUENCY", 0, "Butterworth bandpass lower cutoff frequency"},
-    {"highcut",  'h', "FREQUENCY", 0, "Butterworth bandpass higher cutoff frequency"},
-    {"order",    'd', "NUM",       0, "Butterworth bandpass filter order"},
-    /* {"config",   's', "FILE", 0, "Config FILE name (default: config.ini)"}, */
-    {0}
-};
-
-/* Parse a single option. */
-static error_t parse_opt(int key, char *arg, struct argp_state *state)
-{
-    /* Get the input argument from argp_parse, which we
-       know is a pointer to our arguments structure. */
-    struct cfg_t *cfg = state->input;
-    int v;
-    double d;
-
-    switch (key) {
-        case 'v':
-            cfg->debug_out = true;
-            break;
-        case 'o':
-            cfg->output_file = arg;
-            break;
-        case 's':
-            cfg->cfg_file = arg;
-            break;
-        case 'c':
-            cfg->channel = arg;
-            break;
-        case 'p':
-            v = atoi(arg);
-            if (v > 0)
-                cfg->olverlap = v;
-            break;
-        case 'l':
-            d = strtod(arg, NULL);
-            if (d > 0)
-                cfg->lowcut = d;
-            break;
-        case 'h':
-            d = strtod(arg, NULL);
-            if (d > 0)
-                cfg->highcut = d;
-            break;
-        case 'd':
-            v = atoi(arg);
-            if (v > 0)
-                cfg->butter_order = v;
-            break;
-        case ARGP_KEY_ARG:
-            if (state->arg_num >= 1)
-                /* Too many arguments. */
-                argp_usage (state);
-
-            cfg->wfdisc_file = arg;
-
-            break;
-        case ARGP_KEY_END:
-            if (state->arg_num < 1)
-                /* Not enough arguments. */
-                argp_usage (state);
-            break;
-        default:
-            return ARGP_ERR_UNKNOWN;
-    }
-    return 0;
+    exit(EXIT_SUCCESS);
 }
 
-static struct argp argp = {options, parse_opt, args_doc, doc};
+void short_usage(char **argv)
+{
+    printf("Usage: %s [-vV] [-c CODE] [-d NUM] [-H FREQUENCY] [-L FREQUENCY]\n", basename(argv[0]));
+    printf("         [-o FILE] [-p NUM] [--channel=CODE] [--order=NUM]\n");
+    printf("         [--highcut=FREQUENCY] [--lowcut=FREQUENCY] [--output=FILE]\n");
+    printf("         [--olverlap=NUM] [--verbose] [--help] [--usage] [--version] FILE\n");
+    printf("\n");
+    printf("Try `%s --help' or `%s --usage` for more information.\n",
+            basename(argv[0]), basename(argv[0]));
+
+    exit(EXIT_SUCCESS);
+}
+
+void version()
+{
+    printf("geodiagmas 1.0");
+
+    exit(EXIT_SUCCESS);
+}
 
 void init_cfg()
 {
@@ -132,10 +91,84 @@ int parse_config_file()
 
 int parse_cmd_line(int argc, char *argv[])
 {
-    argp_parse (&argp, argc, argv, 0, 0, &cfg);
+    int c;
+
+    static struct option long_options[] =
+    {
+        {"verbose", no_argument,       0, 'v'},
+        {"help",    no_argument,       0, 'h'},
+        {"usage",   no_argument,       0, 'h'},
+        {"version", no_argument,       0, 'V'},
+        {"channel", required_argument, 0, 'c'},
+        {"order",   required_argument, 0, 'd'},
+        {"highcut", required_argument, 0, 'h'},
+        {"lowcut",  required_argument, 0, 'l'},
+        {"output",  required_argument, 0, 'o'},
+        {"overlap", required_argument, 0, 'p'},
+        {0, 0, 0, 0}
+    };
+
+    double d;
+    int v;
+
+    while (1) {
+        int id = 0;
+
+        if ((c = getopt_long (argc, argv, "vVhp:o:L:H:d:c:", 
+                        long_options, &id)) == -1)
+        {
+            break;
+        }
+
+        switch (c) {
+        case 'v':
+            cfg.debug_out = true;
+            break;
+        case 'o':
+            cfg.output_file = optarg;
+            break;
+        case 's':
+            cfg.cfg_file = optarg;
+            break;
+        case 'c':
+            cfg.channel = optarg;
+            break;
+        case 'p':
+            v = atoi(optarg);
+            if (v > 0)
+                cfg.olverlap = v;
+            break;
+        case 'L':
+            d = strtod(optarg, NULL);
+            if (d > 0)
+                cfg.lowcut = d;
+            break;
+        case 'H':
+            d = strtod(optarg, NULL);
+            if (d > 0)
+                cfg.highcut = d;
+            break;
+        case 'd':
+            v = atoi(optarg);
+            if (v > 0)
+                cfg.butter_order = v;
+            break;
+        case 'V':
+            version();
+        case 'h':
+            usage(argv);
+        default:
+            short_usage(argv);
+        }
+    }
+
+    if (optind < argc && optind + 1 >= argc)
+        cfg.wfdisc_file = argv[optind];
+    else
+        short_usage(argv);
 
     if (cfg.lowcut * cfg.highcut < 0.0f)
-        fatal("You should specify both high and low cutoff frequency");
+        fatal("You should specify both high and low cutoff frequencies");
 
     if (cfg.lowcut > cfg.highcut)
         fatal("Incorrect cutoff frequency");
@@ -143,6 +176,7 @@ int parse_cmd_line(int argc, char *argv[])
     if (cfg.butter_order % 4 != 0)
         fatal("Butterworth filter order should be 4,8,12,16,...");
 
+#if 0
     debug("Command line agruments:");
     debug("debug_out = %s", cfg.debug_out ? "yes":"no");
     debug("wfdisc file = %s", cfg.wfdisc_file);
@@ -151,7 +185,8 @@ int parse_cmd_line(int argc, char *argv[])
     debug("output file = %s", cfg.output_file);
     debug("lowcut freq = %lf", cfg.lowcut);
     debug("highcut freq = %lf", cfg.highcut);
+    debug("filter order = %d", cfg.butter_order);
+#endif
 
     return 1;
 }
-

@@ -3,18 +3,16 @@
 #include <errno.h>
 #include <float.h>
 #include <math.h>
+#include <time.h>
+#include <assert.h>
 
 #include "utils.h"
 #include "params.h"
 #include "format.h"
 #include "plot.h"
-#include <unistd.h>
 
 #include "gnuplot_i.h"
 #include "data.h"
-
-#include <time.h>
-#include <assert.h>
 
 #define DATE_SIZE 60
 

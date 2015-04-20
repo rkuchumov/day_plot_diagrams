@@ -1,13 +1,11 @@
 #include "utils.h"
 #include "params.h"
 #include "data.h"
+
 #include <float.h>
 #include <assert.h>
 #include <math.h>
-
 #include <stdlib.h>
-
-#include <unistd.h>
 
 void butterworth_bandpass(struct data_t **data, int n)
 {
