@@ -1,7 +1,7 @@
 SHELL = /bin/sh
 
 CC = gcc
-CFLAGS = -Wno-missing-field-initializers -O3
+CFLAGS = -Wno-missing-field-initializers -g
 ALL_FLAGS = -std=gnu99 -lm
 
 TARGET = geodiagrams
@@ -30,10 +30,15 @@ $(OBJS_DIR)/%.o: %.c
 
 .PHONY: clean
 clean:
+ifdef SystemRoot
+	DEL $(TARGET).exe 2>NUL
+	DEL /S /Q $(OBJS_DIR) 2>NUL
+	DEL .depend 2>NUL
+else
 	rm $(TARGET) 2>/dev/null || true
-	rm $(OBJS) 2>/dev/null || true
 	rm -rd $(OBJS_DIR) 2>/dev/null || true
 	rm .depend 2>/dev/null || true
+endif
 
 .PHONY: depend dep
 depend dep:
