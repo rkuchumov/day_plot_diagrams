@@ -13,6 +13,8 @@
 #define PATH_MAX 4096
 #endif
 
+#include <unistd.h>
+
 void printlog(unsigned vlevel, const char *file, int line, 
         const char *fmt, ...);
 
@@ -25,7 +27,7 @@ char *m_mktemp();
  */
 float read_flt(FILE *fp);
 
-float read_int(FILE *fp);
+int read_int(FILE *fp);
 
 void set_tz(char *env_tz);
 

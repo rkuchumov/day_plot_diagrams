@@ -90,7 +90,7 @@ void slope(struct data_t **data, int n)
         double right_avg = 0;
         for (int j = 0; j < n_eps; j++) {
             left_avg += data[i]->d[j] / n_eps;
-            right_avg += data[i]->d[data[i]->samp_cnt - j] / n_eps;
+            right_avg += data[i]->d[data[i]->samp_cnt - j - 1] / n_eps;
         }
 
         double t1 = (double) data[i]->samp_cnt / cfg.samp_rate;

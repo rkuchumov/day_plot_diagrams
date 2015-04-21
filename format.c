@@ -66,10 +66,12 @@ struct data_t **read_data(FILE *wfdisc_fp)
             fatal_errno("malloc");
 
         for (int j = 0; j < wf->nsamp; j++) {
+            if (ferror(wf->fp))
+                fatal("Read error (%s)", wf->dfile);
             if (feof(wf->fp))
-                fatal("unexpected EOF in %s", wf->dfile);
+                fatal("Unexpected EOF (%s)", wf->dfile);
 
-            ret[i]->d[j] = read_int(wf->fp);
+            ret[i]->d[j] = (float) read_int(wf->fp);
         }
 
         if (cfg.station_name == NULL) {
@@ -216,7 +218,7 @@ void open_data_file(struct wf_t *wf)
 
     debug("Parsing data file (%s)", path);
 
-    wf->fp = fopen(path, "r");
+    wf->fp = fopen(path, "rb");
     if (wf->fp == NULL)
         fatal_errno("fopen");
 }

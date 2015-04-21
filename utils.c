@@ -91,8 +91,9 @@ again:
 
     return filename;
 }
+#include <unistd.h>
 
-float read_int(FILE *fp) 
+int read_int(FILE *fp) 
 {
     union u4 int_u;
     uint8_t d[4];
@@ -109,12 +110,12 @@ float read_int(FILE *fp)
     /* int_u.data[2] = d[2]; */
     /* int_u.data[3] = d[3]; */
 
-    /* debug("%#02x %#02x %#02x %#02x --> %f",  */
+    /* debug("%#02x %#02x %#02x %#02x --> %d",  */
     /*         int_u.data[0],  */
     /*         int_u.data[1],  */
     /*         int_u.data[2],  */
     /*         int_u.data[3],  */
-    /*         int_u.f); */
+    /*         int_u.i); */
 
     return int_u.i;
 }
