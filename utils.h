@@ -13,8 +13,6 @@
 #define PATH_MAX 4096
 #endif
 
-#include <unistd.h>
-
 void printlog(unsigned vlevel, const char *file, int line, 
         const char *fmt, ...);
 
