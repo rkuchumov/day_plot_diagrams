@@ -7,6 +7,8 @@
 #include <getopt.h>
 #include <libgen.h>
 
+#include <assert.h>
+
 #define STA_CNT 6
 #define STA_NAME_LEN 10
 #define STA_COORDS_LEN 40
@@ -233,4 +235,27 @@ int parse_cmd_line(int argc, char *argv[])
 #endif
 
     return 1;
+}
+
+void set_output_file()
+{
+    assert(cfg.output_file == NULL);
+    assert(cfg.date != 0);
+    assert(cfg.station_name != NULL);
+    assert(cfg.channel != NULL);
+
+    cfg.output_file = malloc(sizeof(char) * PATH_MAX);
+    if (cfg.output_file == NULL)
+        fatal_errno("malloc");
+
+    char date[DATE_LEN];
+    strftime(date, DATE_LEN, "%Y%m%d", cfg.date);
+
+    char *e = cfg.output_file;
+    e += sprintf(e, "%s_%s_%s", date, cfg.station_name, cfg.channel);
+
+    if (cfg.highcut > 0 && cfg.lowcut > 0)
+        sprintf(e, "_%0.2f_%0.2f.png", cfg.lowcut, cfg.highcut);
+    else
+        sprintf(e, "_no_filter.png");
 }

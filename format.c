@@ -79,6 +79,7 @@ struct data_t **read_data(FILE *wfdisc_fp)
                 fatal_errno("malloc");
 
             strcpy(cfg.station_name, wf->sta);
+
         }
 
         fclose(wf->fp);

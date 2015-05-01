@@ -14,8 +14,6 @@
 #include "gnuplot_i.h"
 #include "data.h"
 
-#define DATE_SIZE 60
-
 int main(int argc, char *argv[]) {
     init_cfg();
 
@@ -38,16 +36,13 @@ int main(int argc, char *argv[]) {
 
     cfg.samp_rate = data[0]->samp_rate;
 
-    struct tm *ptm = localtime(&data[0]->time);
-    ptm->tm_hour = 0;
-    ptm->tm_min = 0;
-    ptm->tm_sec = 0;
-    time_t t0 = mktime(ptm);
-
-    cfg.date = malloc(DATE_SIZE);
-    if (cfg.date == NULL)
+    if (NULL == (cfg.date = malloc(sizeof (struct tm))))
         fatal_errno("malloc");
-    strftime(cfg.date, DATE_SIZE, "%Y-%m-%d", ptm);
+    localtime_r(&data[0]->time, cfg.date);
+    cfg.date->tm_hour = 0;
+    cfg.date->tm_min = 0;
+    cfg.date->tm_sec = 0;
+    time_t t0 = mktime(cfg.date);
 
     int n = 0;
     while(data[n] != NULL && (data[n]->time - t0) < SEC_PER_DAY)
@@ -59,6 +54,9 @@ int main(int argc, char *argv[]) {
     slope(data, n);
 
     scale(data, n);
+
+    if (cfg.output_file == NULL)
+        set_output_file();
 
     plot(data, n);
 

@@ -4,7 +4,7 @@
 #define DFT_DEBUG_OUT 0
 
 #define DFT_STA_FILE "stations.txt"
-#define DFT_OUTPUT_FILE "output.png"
+#define DFT_OUTPUT_FILE NULL
 #define DFT_INPUT_FILE "data.wfdisk"
 
 #define DFT_WFDISC_FILE "data.wfdisc"
@@ -59,8 +59,8 @@ struct cfg_t {
     unsigned ytics_font_size;
     unsigned rot_eps;
 
-    char *date;
     char *station_name;
+    struct tm *date;
 
     unsigned is_inited : 1;
 } cfg;
@@ -82,6 +82,8 @@ void parse_station_coords();
  * @return -1 on error, 1 on success
  */
 int parse_cmd_line(int argc, char *argv[]);
+
+void set_output_file();
 
 #endif /* end of include guard: PARAMS_H */
 

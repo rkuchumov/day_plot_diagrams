@@ -38,6 +38,7 @@ gnuplot_ctrl *init()
     sprintf(cmd, "set xrange[%d:%d]", 0, cfg.plot_period / 60);
     gnuplot_cmd(h, cmd);
 
+
     float min = -2.0f * (SEC_PER_DAY / cfg.plot_period) * cfg.plot_max_val;
     sprintf(cmd, "set yrange[%f:%f]", min, cfg.plot_max_val);
     gnuplot_cmd(h, cmd);
@@ -88,7 +89,9 @@ gnuplot_ctrl *init()
     gnuplot_cmd(h, cmd);
 
     assert(cfg.date != NULL);
-    sprintf(cmd, "set label \"Date: %s\" left at graph 0, screen 0.99", cfg.date);
+    char date[DATE_LEN];
+    strftime(date, DATE_LEN, "%Y-%m-%d", cfg.date);
+    sprintf(cmd, "set label \"Date: %s\" left at graph 0, screen 0.99", date);
     gnuplot_cmd(h, cmd);
 
     assert(cfg.station_name != NULL);

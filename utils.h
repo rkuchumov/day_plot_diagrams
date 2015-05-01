@@ -13,6 +13,8 @@
 #define PATH_MAX 4096
 #endif
 
+#define DATE_LEN 60
+
 void printlog(unsigned vlevel, const char *file, int line, 
         const char *fmt, ...);
 
