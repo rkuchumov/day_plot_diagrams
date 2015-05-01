@@ -3,7 +3,7 @@
 
 #define DFT_DEBUG_OUT 0
 
-#define DFT_CFG_FILE "config.ini"
+#define DFT_STA_FILE "stations.txt"
 #define DFT_OUTPUT_FILE "output.png"
 #define DFT_INPUT_FILE "data.wfdisk"
 
@@ -65,16 +65,18 @@ struct cfg_t {
     unsigned is_inited : 1;
 } cfg;
 
+struct sta_t {
+    char *name;
+    char *coords;
+} *stations;
+
 /** Sets default values to cfg structre fields
  * @see cfg_t
  * @return -1 on error, 1 on success
  */
 void init_cfg();
 
-/** Opens config file, parses it into cfg structure
- * @return -1 on error, 1 on success
- */
-int parse_config_file();
+void parse_station_coords();
 
 /** Parses command line params into cfg structure
  * @return -1 on error, 1 on success

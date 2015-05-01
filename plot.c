@@ -49,6 +49,9 @@ gnuplot_ctrl *init()
     for (unsigned i = 1; i < SEC_PER_DAY / cfg.plot_period; i++) {
         t += cfg.plot_period;
 
+        if (i % 2)
+            continue;
+
         struct tm *ptm = localtime(&t);
 
         float pos = -2.0f * i * cfg.plot_max_val;
@@ -64,6 +67,9 @@ gnuplot_ctrl *init()
     for (unsigned i = 1; i < SEC_PER_DAY / cfg.plot_period; i++) {
         t += cfg.plot_period;
 
+        if (i % 2)
+            continue;
+
         ptm = localtime(&t);
 
         float pos = -2.0f * i * cfg.plot_max_val;
@@ -78,20 +84,51 @@ gnuplot_ctrl *init()
     sprintf(cmd, "set nokey");
     gnuplot_cmd(h, cmd);
 
-    assert(cfg.date != NULL);
-    sprintf(cmd, "set label \"Date: %s\" left at graph 0, screen 0.95", cfg.date);
-    gnuplot_cmd(h, cmd);
-
-    assert(cfg.date != NULL);
-    sprintf(cmd, "set label \"Channel: %s\" left at graph 0, screen 0.97", cfg.channel);
-    gnuplot_cmd(h, cmd);
-
-    assert(cfg.date != NULL);
-    sprintf(cmd, "set label \"Station: %s\" left at graph 0, screen 0.99", cfg.station_name);
-    gnuplot_cmd(h, cmd);
-
     sprintf(cmd, "set tmargin 4");
     gnuplot_cmd(h, cmd);
+
+    assert(cfg.date != NULL);
+    sprintf(cmd, "set label \"Date: %s\" left at graph 0, screen 0.99", cfg.date);
+    gnuplot_cmd(h, cmd);
+
+    assert(cfg.station_name != NULL);
+    int found = -1;
+    for (int i = 0; stations[i].name != NULL; i++) {
+        if (strcmp(stations[i].name, cfg.station_name) == 0) {
+            found = i;
+            break;
+        }
+    }
+
+    if (found < 0) {
+        sprintf(cmd, "set label \"Station: %s\" left at graph 0, screen 0.97",
+                cfg.station_name);
+        gnuplot_cmd(h, cmd);
+    } else {
+        sprintf(cmd, "set label \"Station: %s (%s)\" left at graph 0, screen 0.97", 
+                cfg.station_name, stations[found].coords);
+        gnuplot_cmd(h, cmd);
+    }
+
+    assert(cfg.channel != NULL);
+    sprintf(cmd, "set label \"Channel: %s\" left at graph 0, screen 0.95", cfg.channel);
+    gnuplot_cmd(h, cmd);
+
+    sprintf(cmd, "set label \"Overlap: %d\" left at graph 0.5, screen 0.99", cfg.olverlap);
+    gnuplot_cmd(h, cmd);
+
+    if (cfg.highcut > 0 && cfg.lowcut > 0) {
+        sprintf(cmd, "set label \"Filter lowcut/highcut freq.: %0.2f/%0.2f \" left at graph 0.5, screen 0.97",
+                cfg.lowcut, cfg.highcut);
+        gnuplot_cmd(h, cmd);
+
+        sprintf(cmd, "set label \"Filter order: %d \" left at graph 0.5, screen 0.95",
+                cfg.butter_order);
+        gnuplot_cmd(h, cmd);
+    } else {
+        sprintf(cmd, "set label \"No Filter\" left at graph 0.5, screen 0.97");
+        gnuplot_cmd(h, cmd);
+    }
 
     return h;
 }

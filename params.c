@@ -7,9 +7,13 @@
 #include <getopt.h>
 #include <libgen.h>
 
+#define STA_CNT 6
+#define STA_NAME_LEN 10
+#define STA_COORDS_LEN 40
+
 void usage(char **argv) {
     printf("Usage: %s [OPTION...] FILE\n", basename(argv[0]));
-    printf("%s -- CSS data visuzlization\n", basename(argv[0]));
+    printf("%s -- CSS waveforms visualization\n", basename(argv[0]));
     printf("\n");
     printf("  -c, --channel=CODE         Channel code to process data from\n");
     printf("  -d, --order=NUM            Butterworth bandpass filter order\n");
@@ -53,7 +57,7 @@ void init_cfg()
 {
     cfg.debug_out = DFT_DEBUG_OUT;
     cfg.output_file = DFT_OUTPUT_FILE;
-    cfg.cfg_file = DFT_CFG_FILE;
+    /* cfg.cfg_file = DFT_CFG_FILE; */
 
     cfg.wfdisc_file = DFT_WFDISC_FILE;
     cfg.channel = DFT_CHANNEL;
@@ -80,10 +84,53 @@ void init_cfg()
     cfg.is_inited = true;
 }
 
-int parse_config_file()
+void parse_station_coords()
 {
-    /* TODO  */
-    return 1;
+	FILE *fp = fopen(DFT_STA_FILE, "r");
+	if (fp == NULL) {
+	    debug("Skipping stations' coordinates file: %s", strerror(errno));
+	    return;
+    }
+
+    debug("Reading station coordinates");
+
+    stations = calloc(0, sizeof(struct sta_t) * STA_CNT);
+    if (stations == NULL)
+        fatal_errno("calloc");
+    int allocated = STA_CNT;
+
+    int id = 0;
+
+	char *line = NULL;
+	size_t len = 0;
+	while (m_getline(&line, &len, fp) >= 0) {
+	    if (allocated >= id + 1) {
+            allocated += STA_CNT;
+            stations = realloc(stations, sizeof(struct sta_t) * allocated);
+            if (stations == NULL)
+                fatal_errno("realloc");
+        }
+
+        static char name[STA_NAME_LEN];
+        static char coords[STA_COORDS_LEN];
+	    if (sscanf(line, "%s %[^\n]s\n", name, coords) != 2)
+	        continue;
+
+        if ((stations[id].name = malloc(strlen(name) + 1)) == NULL)
+            fatal_errno("malloc");
+        if ((stations[id].coords = malloc(strlen(coords) + 1)) == NULL)
+            fatal_errno("malloc");
+
+        strcpy(stations[id].name, name);
+        strcpy(stations[id].coords, coords);
+
+        id++;
+	}
+
+	stations[id].name = NULL;
+	stations[id].coords = NULL;
+
+	fclose(fp);
 }
 
 int parse_cmd_line(int argc, char *argv[])

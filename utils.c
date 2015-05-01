@@ -148,7 +148,7 @@ time_t day_start(time_t t)
     return mktime(ptm);
 }
 
-size_t m_getline(char **lineptr, size_t *n, FILE *stream) {
+ssize_t m_getline(char **lineptr, size_t *n, FILE *stream) {
     assert(n != NULL);
     assert(stream != NULL);
     assert(lineptr != NULL);

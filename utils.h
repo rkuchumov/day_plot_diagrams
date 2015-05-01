@@ -31,7 +31,7 @@ void set_tz(char *env_tz);
 
 time_t day_start(time_t t);
 
-size_t m_getline(char **lineptr, size_t *n, FILE *stream);
+ssize_t m_getline(char **lineptr, size_t *n, FILE *stream);
 
 #define FATAL 0
 #define DEBUG 1

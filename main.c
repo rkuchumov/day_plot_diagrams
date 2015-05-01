@@ -22,8 +22,7 @@ int main(int argc, char *argv[]) {
     if (parse_cmd_line(argc, argv) < 0)
         exit(EXIT_FAILURE);
 
-    if (parse_config_file() < 0)
-        exit(EXIT_FAILURE);
+    parse_station_coords();
 
     set_tz(cfg.env_tz);
 

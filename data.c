@@ -107,6 +107,21 @@ void scale(struct data_t **data, int n)
 {
     float min = FLT_MAX;
     float max = -FLT_MAX;
+/*  */
+/*     float avg = 0.0f; */
+/*     int n_eps = 3; */
+/*     for (int i = 0; i < n; i++) { */
+/*         for (int j = 0; j < data[i]->samp_cnt; j++) { */
+/*             if (j % n_eps == 0) { */
+/*                 if (avg > max) max = avg; */
+/*                 if (avg < min) min = avg; */
+/*                 avg = data[i]->d[j] / n_eps; */
+/*             } else { */
+/*                 avg += data[i]->d[j] / n_eps; */
+/*             } */
+/*         } */
+/*     } */
+/*  */
 
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < data[i]->samp_cnt; j++) {
