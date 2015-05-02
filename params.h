@@ -27,7 +27,7 @@
 
 #define DFT_LOWCUT -1.0f
 #define DFT_HIGHCUT -1.0f
-#define DFT_BUTTER_ORDER 4
+#define DFT_BUTTER_ORDER 3
 
 #define DFT_TIMEZONE "UTC"
 

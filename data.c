@@ -1,79 +1,74 @@
 #include "utils.h"
 #include "params.h"
 #include "data.h"
+#include "iir.h"
 
 #include <float.h>
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
 
+#include <unistd.h>
+
 void butterworth_bandpass(struct data_t **data, int n)
 {
     assert(cfg.highcut > 0);
     assert(cfg.lowcut > 0);
     assert(cfg.highcut > cfg.lowcut);
-    assert(cfg.butter_order % 4 == 0);
+    assert(cfg.butter_order > 0);
     assert(cfg.samp_rate > 0);
 
-    int order = cfg.butter_order;
-    double f1 = cfg.highcut;
-    double f2 = cfg.lowcut;
-    double s = cfg.samp_rate;
+    debug("Applying Butterworth filter (lowcut = %lf, highcut = %lf, order = %d)",
+            cfg.lowcut, cfg.highcut, cfg.butter_order);
+    double fl = 2.0f * cfg.lowcut / cfg.samp_rate;
+    double fh = 2.0f * cfg.highcut / cfg.samp_rate;
+    double order = cfg.butter_order;
 
-    debug("Applying Butterworth filter (lowcut = %lf, highcut = %lf, order = %d)", f2, f1, order);
+    double *b = dcof_bwbp(order, fl, fh);
+    int *a = ccof_bwbp(order);
+    double gain = sf_bwbp(order, fl, fh);
 
-    double a = cos(M_PI * (f1 + f2) / s) / cos(M_PI * (f1 - f2) / s);
-    double a2 = a * a;
-    double b = tan(M_PI * (f1 - f2) / s);
-    double b2 = b * b;
-    double r;
-
-    order /= 4;
-    double *A =  (double *) malloc(order * sizeof(double));
-    double *d1 = (double *) malloc(order * sizeof(double));
-    double *d2 = (double *) malloc(order * sizeof(double));
-    double *d3 = (double *) malloc(order * sizeof(double));
-    double *d4 = (double *) malloc(order * sizeof(double));
-    if (!A || !d1 || !d2 || !d3 || !d4)
-        fatal_errno("malloc");
-
-    double *w0 = (double *) calloc(order, sizeof(double));
-    double *w1 = (double *) calloc(order, sizeof(double));
-    double *w2 = (double *) calloc(order, sizeof(double));
-    double *w3 = (double *) calloc(order, sizeof(double));
-    double *w4 = (double *) calloc(order, sizeof(double));
-    if (!w0 || !w1 || !w2 || !w3)
+    int l = 2 * order + 1;
+    double *xv = calloc(sizeof(double), l);
+    if (xv == NULL)
+        fatal_errno("calloc");
+    double *yv = calloc(sizeof(double), l);
+    if (yv == NULL)
         fatal_errno("calloc");
 
-    for(int i = 0; i < order; i++) {
-        r = sin(M_PI*(2.0*i+1.0)/(4.0*order));
-        s = b2 + 2.0*b*r + 1.0;
-        A[i] = b2/s;
-        d1[i] = 4.0*a*(1.0+b*r)/s;
-        d2[i] = 2.0*(b2-2.0*a2-1.0)/s;
-        d3[i] = 4.0*a*(1.0-b*r)/s;
-        d4[i] = -(b2 - 2.0*b*r + 1.0)/s;
+#if 0
+    debug("gain = %lf", gain);
+    for (int k = 0; k < l; k++) {
+        debug("%d * x%d", a[l - k - 1], k);
     }
+    for (int k = 0; k < l - 1; k++) {
+        debug("%lf * y%d", -b[l - k - 1], k);
+    }
+#endif
 
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < data[i]->samp_cnt; j++) {
-            double x = data[i]->d[j];
-
-            for (int k = 0; k < order; ++k) {
-                w0[k] =  x + 
-                    d1[k]*w1[k] + d2[k]*w2[k] + d3[k]*w3[k] + d4[k]*w4[k];
-
-                x = A[k] * (w0[k] - 2.0 * w2[k] + w4[k]);
-
-                w4[k] = w3[k];
-                w3[k] = w2[k];
-                w2[k] = w1[k];
-                w1[k] = w0[k];
+            for (int k = 1; k < l; k++) {
+                xv[k - 1] = xv[k];
+                yv[k - 1] = yv[k];
             }
 
-            data[i]->d[j] = x;
+            xv[l - 1] = data[i]->d[j] * gain;
+
+            yv[l - 1] = 0;
+            for (int k = 0; k < l; k++)
+                yv[l - 1] += xv[k] * ((double) a[l - k - 1]);
+            for (int k = 0; k < l - 1; k++)
+                yv[l - 1] -= yv[k] * b[l - k - 1];
+
+            data[i]->d[j] = yv[l - 1];
         }
     }
+
+    free(b);
+    free(a);
+    free(xv);
+    free(yv);
 }
 
 void slope(struct data_t **data, int n)

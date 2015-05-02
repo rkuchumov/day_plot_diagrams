@@ -45,7 +45,7 @@ void short_usage(char **argv)
     printf("Try `%s --help' or `%s --usage` for more information.\n",
             basename(argv[0]), basename(argv[0]));
 
-    exit(EXIT_SUCCESS);
+    exit(EXIT_FAILURE);
 }
 
 void version()
@@ -96,7 +96,7 @@ void parse_station_coords()
 
     debug("Reading station coordinates");
 
-    stations = calloc(0, sizeof(struct sta_t) * STA_CNT);
+    stations = calloc(sizeof(struct sta_t), STA_CNT);
     if (stations == NULL)
         fatal_errno("calloc");
     int allocated = STA_CNT;
@@ -217,10 +217,10 @@ int parse_cmd_line(int argc, char *argv[])
         fatal("You should specify both high and low cutoff frequencies");
 
     if (cfg.lowcut > cfg.highcut)
-        fatal("Incorrect cutoff frequency");
+        fatal("Incorrect cutoff frequencies");
 
-    if (cfg.butter_order % 4 != 0)
-        fatal("Butterworth filter order should be 4,8,12,16,...");
+    if (cfg.butter_order <= 0)
+        fatal("Incorrect filter order");
 
 #if 0
     debug("Command line agruments:");
