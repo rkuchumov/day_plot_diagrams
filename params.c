@@ -255,7 +255,7 @@ void set_output_file()
     e += sprintf(e, "%s_%s_%s", date, cfg.station_name, cfg.channel);
 
     if (cfg.highcut > 0 && cfg.lowcut > 0)
-        sprintf(e, "_%0.2f_%0.2f.png", cfg.lowcut, cfg.highcut);
+        sprintf(e, "_%0.2f_%0.2f_%d.png", cfg.lowcut, cfg.highcut, cfg.butter_order);
     else
         sprintf(e, "_no_filter.png");
 }

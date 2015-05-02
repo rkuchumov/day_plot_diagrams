@@ -8,8 +8,6 @@
 #include <math.h>
 #include <stdlib.h>
 
-#include <unistd.h>
-
 void butterworth_bandpass(struct data_t **data, int n)
 {
     assert(cfg.highcut > 0);
