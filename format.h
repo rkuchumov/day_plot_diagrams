@@ -1,7 +1,6 @@
 #ifndef FORMAT_H
 #define FORMAT_H
 
-#include <stdio.h>
 #include <time.h>
 
 struct data_t {
@@ -11,7 +10,7 @@ struct data_t {
     time_t time;
 };
 
-struct data_t **read_data(FILE *wfdisc_file);
+struct data_t **read_data();
 
 #endif /* end of include guard: FORMAT_H */
 

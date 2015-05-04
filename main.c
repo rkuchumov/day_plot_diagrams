@@ -24,12 +24,8 @@ int main(int argc, char *argv[]) {
 
     set_tz(cfg.env_tz);
 
-    debug("Opening wfdisk file (%s)", cfg.wfdisc_file);
-    FILE *wfdisc_fp = fopen(cfg.wfdisc_file, "r");
-    if (wfdisc_fp == NULL)
-        fatal_errno("fopen");
-
-    struct data_t **data = read_data(wfdisc_fp);
+    debug("Reading CSS data (%s)", cfg.input_file);
+    struct data_t **data = read_data();
 
     assert(data != NULL);
     assert(data[0] != NULL);
@@ -59,6 +55,8 @@ int main(int argc, char *argv[]) {
         set_output_file();
 
     plot(data, n);
+
+    debug("Output file: %s", cfg.output_file);
 
     return 0;
 }

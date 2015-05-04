@@ -156,6 +156,7 @@ void draw(gnuplot_ctrl *h, char **files, int plot_cnt)
 
 char **creat_plot_files(struct data_t **data, int n)
 {
+    debug("Creating temprorary files");
     time_t t0 = day_start(data[0]->time);
 
     char **plot_data_files = (char **) malloc(sizeof(char *) * n);
@@ -163,13 +164,10 @@ char **creat_plot_files(struct data_t **data, int n)
         fatal_errno("malloc");
 
     for (int i = 0; i < n; i++) {
-
         plot_data_files[i] = m_mktemp();
         FILE *data_fp = fopen(plot_data_files[i], "w");
         if (data_fp == NULL)
             fatal_errno("fopen");
-
-        debug("Temprorary plot data file (%s) is created", plot_data_files[i]);
 
         time_t dt = data[i]->time - t0;
         unsigned plot_num = dt / cfg.plot_period;

@@ -26,8 +26,6 @@ struct wf_t {
     int foff;
 };
 
-struct data_t **read_data(FILE *wfdisc_file);
-
 struct wf_t *next_file(FILE *wfdisc_fp);
 void free_wf(struct wf_t *wf);
 char *read_wfdisc_line(FILE *wfdisc_fp);
@@ -35,8 +33,14 @@ void parse_wfdisc_line(char *line, struct wf_t *wf);
 void open_data_file(struct wf_t *wf);
 int skip_data_file(struct wf_t *wf);
 
-struct data_t **read_data(FILE *wfdisc_fp)
+struct data_t **read_data()
 {
+    assert(cfg.input_file != NULL);
+
+    FILE *wfdisc_fp = fopen(cfg.input_file, "r");
+    if (wfdisc_fp == NULL)
+        fatal_errno("fopen");
+
     struct data_t **ret;
     unsigned data_size = sizeof(struct data_t *) * FILES_CNT;
     ret = (struct data_t **) malloc(data_size);
@@ -89,6 +93,8 @@ struct data_t **read_data(FILE *wfdisc_fp)
     }
 
     ret[i] = NULL;
+
+    fclose(wfdisc_fp);
 
     return ret;
 }
@@ -208,7 +214,7 @@ void open_data_file(struct wf_t *wf)
 
     char tmp[PATH_MAX] = {0};
 
-    strcpy(tmp, cfg.wfdisc_file);
+    strcpy(tmp, cfg.input_file);
     e += sprintf(e, "%s/", dirname(tmp));
 
     strcpy(tmp, wf->dir);
@@ -216,8 +222,6 @@ void open_data_file(struct wf_t *wf)
 
     strcpy(tmp, wf->dfile);
     e += sprintf(e, "%s", basename(tmp));
-
-    debug("Parsing data file (%s)", path);
 
     wf->fp = fopen(path, "rb");
     if (wf->fp == NULL)

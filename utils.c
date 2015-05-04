@@ -6,6 +6,7 @@
 #include <stdarg.h>
 #include <assert.h>
 #include <time.h>
+#include <sys/stat.h>
 
 #ifdef WIN32
 #include <io.h>
@@ -186,4 +187,18 @@ ssize_t m_getline(char **lineptr, size_t *n, FILE *stream) {
     *n = size;
 
     return p - bufptr - 1;
+}
+
+bool is_dir(const char *path)
+{
+    assert(path != NULL);
+
+    struct stat s;
+    if (stat(path, &s) < 0)
+        fatal_errno("stat");
+
+    if (s.st_mode & S_IFDIR)
+        return true;
+
+    return false;
 }

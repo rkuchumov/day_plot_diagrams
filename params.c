@@ -59,9 +59,8 @@ void init_cfg()
 {
     cfg.debug_out = DFT_DEBUG_OUT;
     cfg.output_file = DFT_OUTPUT_FILE;
-    /* cfg.cfg_file = DFT_CFG_FILE; */
 
-    cfg.wfdisc_file = DFT_WFDISC_FILE;
+    cfg.input_file = DFT_WFDISC_FILE;
     cfg.channel = DFT_CHANNEL;
 
     cfg.samp_rate = DFT_SAMPLING_RATE;
@@ -173,9 +172,6 @@ int parse_cmd_line(int argc, char *argv[])
         case 'o':
             cfg.output_file = optarg;
             break;
-        case 's':
-            cfg.cfg_file = optarg;
-            break;
         case 'c':
             cfg.channel = optarg;
             break;
@@ -209,7 +205,7 @@ int parse_cmd_line(int argc, char *argv[])
     }
 
     if (optind < argc && optind + 1 >= argc)
-        cfg.wfdisc_file = argv[optind];
+        set_input_file(argv[optind]);
     else
         short_usage(argv);
 
@@ -225,9 +221,8 @@ int parse_cmd_line(int argc, char *argv[])
 #if 0
     debug("Command line agruments:");
     debug("debug_out = %s", cfg.debug_out ? "yes":"no");
-    debug("wfdisc file = %s", cfg.wfdisc_file);
+    debug("wfdisc file = %s", cfg.input_file);
     debug("channel code = %s", cfg.channel);
-    debug("config file = %s", cfg.cfg_file);
     debug("output file = %s", cfg.output_file);
     debug("lowcut freq = %lf", cfg.lowcut);
     debug("highcut freq = %lf", cfg.highcut);
@@ -235,6 +230,24 @@ int parse_cmd_line(int argc, char *argv[])
 #endif
 
     return 1;
+}
+
+void set_input_file(char *path)
+{
+    assert(path != NULL);
+
+    if (!is_dir(path)) {
+        cfg.input_file = path;
+        return;
+    }
+
+    char *p = malloc(sizeof(char) * PATH_MAX);
+    if (p == NULL)
+        fatal_errno("malloc");
+
+    sprintf(p, "%s/data.wfdisc", basename(path));
+
+    cfg.input_file = p;
 }
 
 void set_output_file()
@@ -255,7 +268,7 @@ void set_output_file()
     e += sprintf(e, "%s_%s_%s", date, cfg.station_name, cfg.channel);
 
     if (cfg.highcut > 0 && cfg.lowcut > 0)
-        sprintf(e, "_%0.2f_%0.2f_%d.png", cfg.lowcut, cfg.highcut, cfg.butter_order);
+        sprintf(e, "_%0.2f_%0.2f_%d.png", cfg.lowcut, cfg.highcut, cfg.olverlap);
     else
         sprintf(e, "_no_filter.png");
 }

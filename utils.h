@@ -35,6 +35,8 @@ time_t day_start(time_t t);
 
 ssize_t m_getline(char **lineptr, size_t *n, FILE *stream);
 
+bool is_dir(const char *path);
+
 #define FATAL 0
 #define DEBUG 1
 /** buffer size for log messages */

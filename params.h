@@ -27,18 +27,15 @@
 
 #define DFT_LOWCUT -1.0f
 #define DFT_HIGHCUT -1.0f
-#define DFT_BUTTER_ORDER 3
+#define DFT_BUTTER_ORDER 6
 
 #define DFT_TIMEZONE "UTC"
 
 /** Config data structure */
 struct cfg_t {
     unsigned debug_out;
-    char *cfg_file;
     char *output_file;
     char *input_file;
-
-    char *wfdisc_file;
     char *channel;
 
     unsigned samp_rate;
@@ -83,6 +80,7 @@ void parse_station_coords();
  */
 int parse_cmd_line(int argc, char *argv[]);
 
+void set_input_file(char *path);
 void set_output_file();
 
 #endif /* end of include guard: PARAMS_H */
