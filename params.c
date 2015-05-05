@@ -17,12 +17,12 @@ void usage(char **argv) {
     printf("Usage: %s [OPTION...] FILE\n", basename(argv[0]));
     printf("%s -- CSS waveforms visualization\n", basename(argv[0]));
     printf("\n");
-    printf("  -c, --channel=CODE         Channel code to process data from\n");
-    printf("  -d, --order=NUM            Butterworth bandpass filter order\n");
+    printf("  -c, --channel=CODE         Channel code to process data from (default: MHZ)\n");
+    printf("  -d, --order=NUM            Butterworth bandpass filter order (default: 6)\n");
     printf("  -H, --highcut=FREQUENCY    Butterworth bandpass higher cutoff frequency\n");
     printf("  -L, --lowcut=FREQUENCY     Butterworth bandpass lower cutoff frequency\n");
-    printf("  -o, --output=FILE          Output FILE name\n");
-    printf("  -p, --olverlap=NUM         Number of adjacent plots that can be olverlaped\n");
+    printf("  -o, --output=FILE          Output FILE name (default: DATE_STATION_CHANNEL_FILTER_OVERLAP.png)\n");
+    printf("  -p, --olverlap=NUM         Number of adjacent plots that can be olverlaped (default: 3)\n");
     printf("  -v, --verbose              Produce verbose output\n");
     printf("  -h, --help, --usage        Give this help list\n");
     printf("  -V, --version              Print program version\n");
