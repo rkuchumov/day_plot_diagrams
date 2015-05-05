@@ -50,7 +50,7 @@ void short_usage(char **argv)
 
 void version()
 {
-    printf("geodiagmas 1.0");
+    printf("dpd 1.1");
 
     exit(EXIT_SUCCESS);
 }
@@ -175,7 +175,7 @@ int parse_cmd_line(int argc, char *argv[])
             break;
         case 'p':
             v = atoi(optarg);
-            if (v > 0)
+            if (v >= 0)
                 cfg.olverlap = v;
             break;
         case 'L':

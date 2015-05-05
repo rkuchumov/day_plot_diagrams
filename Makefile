@@ -4,7 +4,7 @@ CC = gcc
 CFLAGS = -Wno-missing-field-initializers -g
 ALL_FLAGS = -std=gnu99 -lm
 
-TARGET = geodiagrams
+TARGET = dpd
 
 OBJS_DIR = build
 
