@@ -37,6 +37,8 @@ ssize_t m_getline(char **lineptr, size_t *n, FILE *stream);
 
 bool is_dir(const char *path);
 
+struct tm *m_localtime(const time_t *timep);
+
 #define FATAL 0
 #define DEBUG 1
 /** buffer size for log messages */

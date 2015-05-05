@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
 
     if (NULL == (cfg.date = malloc(sizeof (struct tm))))
         fatal_errno("malloc");
-    localtime_r(&data[0]->time, cfg.date);
+    cfg.date = m_localtime(&data[0]->time);
     cfg.date->tm_hour = 0;
     cfg.date->tm_min = 0;
     cfg.date->tm_sec = 0;

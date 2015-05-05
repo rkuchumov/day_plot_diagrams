@@ -202,3 +202,16 @@ bool is_dir(const char *path)
 
     return false;
 }
+
+struct tm *m_localtime(const time_t *timep)
+{
+    struct tm *t = localtime(timep);
+    
+    struct tm *rc = malloc(sizeof(struct tm));
+    if (rc == NULL)
+        fatal_errno("malloc");
+
+    memcpy(rc, t, sizeof(struct tm));
+
+    return rc;
+}
