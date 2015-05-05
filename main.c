@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
-#include <float.h>
 #include <math.h>
 #include <time.h>
 #include <assert.h>
+#include <libgen.h>
 
 #include "utils.h"
 #include "params.h"
@@ -26,9 +26,12 @@ int main(int argc, char *argv[]) {
 
     debug("Reading CSS data (%s)", cfg.input_file);
     struct data_t **data = read_data();
-
     assert(data != NULL);
-    assert(data[0] != NULL);
+
+    if (data[0] == NULL) {
+        fatal("No data found for \"%s\" channel in %s", 
+                cfg.channel, dirname(cfg.input_file));
+    }
 
     cfg.samp_rate = data[0]->samp_rate;
 

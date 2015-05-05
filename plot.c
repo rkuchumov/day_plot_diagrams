@@ -39,7 +39,7 @@ gnuplot_ctrl *init()
     gnuplot_cmd(h, cmd);
 
 
-    float min = -2.0f * (SEC_PER_DAY / cfg.plot_period) * cfg.plot_max_val;
+    double min = -2.0f * (SEC_PER_DAY / cfg.plot_period) * cfg.plot_max_val;
     sprintf(cmd, "set yrange[%f:%f]", min, cfg.plot_max_val);
     gnuplot_cmd(h, cmd);
 
@@ -55,7 +55,7 @@ gnuplot_ctrl *init()
 
         struct tm *ptm = localtime(&t);
 
-        float pos = -2.0f * i * cfg.plot_max_val;
+        double pos = -2.0f * i * cfg.plot_max_val;
         e += sprintf(e, ", \"%02d:%02d\" %f", ptm->tm_hour, ptm->tm_min, pos);
     }
     sprintf(e, ") font \",%d\"", cfg.ytics_font_size);
@@ -73,7 +73,7 @@ gnuplot_ctrl *init()
 
         ptm = localtime(&t);
 
-        float pos = -2.0f * i * cfg.plot_max_val;
+        double pos = -2.0f * i * cfg.plot_max_val;
         e += sprintf(e, ", \"%02d:%02d\" %f", ptm->tm_hour, ptm->tm_min, pos);
     }
     sprintf(e, ") font \",%d\"", cfg.ytics_font_size);

@@ -16,10 +16,18 @@ void butterworth_bandpass(struct data_t **data, int n)
     assert(cfg.butter_order > 0);
     assert(cfg.samp_rate > 0);
 
+    if (cfg.lowcut > cfg.highcut)
+        fatal("Incorrect cutoff frequencies");
+
+    double nyquist = cfg.samp_rate / 2.0f;
+    if (cfg.lowcut >= nyquist || cfg.highcut >= nyquist) 
+        fatal("Cutoff frequency(ies) should be less than %0.2f (half the sample rate)",
+                nyquist);
+
     debug("Applying Butterworth filter (lowcut = %lf, highcut = %lf, order = %d)",
             cfg.lowcut, cfg.highcut, cfg.butter_order);
-    double fl = 2.0f * cfg.lowcut / cfg.samp_rate;
-    double fh = 2.0f * cfg.highcut / cfg.samp_rate;
+    double fl = cfg.lowcut / nyquist;
+    double fh = cfg.highcut / nyquist;
     double order = cfg.butter_order;
 
     double *b = dcof_bwbp(order, fl, fh);
@@ -35,7 +43,7 @@ void butterworth_bandpass(struct data_t **data, int n)
         fatal_errno("calloc");
 
 #if 0
-    debug("gain = %lf", gain);
+    debug("gain = %lf", 1 / gain);
     for (int k = 0; k < l; k++) {
         debug("%d * x%d", a[l - k - 1], k);
     }
@@ -51,7 +59,7 @@ void butterworth_bandpass(struct data_t **data, int n)
                 yv[k - 1] = yv[k];
             }
 
-            xv[l - 1] = data[i]->d[j] * gain;
+            xv[l - 1] = gain * data[i]->d[j];
 
             yv[l - 1] = 0;
             for (int k = 0; k < l; k++)
@@ -98,35 +106,20 @@ void slope(struct data_t **data, int n)
 
 void scale(struct data_t **data, int n)
 {
-    float min = FLT_MAX;
-    float max = -FLT_MAX;
-/*  */
-/*     float avg = 0.0f; */
-/*     int n_eps = 3; */
-/*     for (int i = 0; i < n; i++) { */
-/*         for (int j = 0; j < data[i]->samp_cnt; j++) { */
-/*             if (j % n_eps == 0) { */
-/*                 if (avg > max) max = avg; */
-/*                 if (avg < min) min = avg; */
-/*                 avg = data[i]->d[j] / n_eps; */
-/*             } else { */
-/*                 avg += data[i]->d[j] / n_eps; */
-/*             } */
-/*         } */
-/*     } */
-/*  */
+    samp_t min = SAMP_MAX;
+    samp_t max = SAMP_MIN;
 
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < data[i]->samp_cnt; j++) {
-            float v = data[i]->d[j];
+            samp_t v = data[i]->d[j];
             if (v > max) max = v;
             if (v < min) min = v;
         }
     }
 
-    float max_hight = (2.0f * cfg.olverlap + 1) * cfg.plot_max_val;
+    double max_hight = (2.0f * cfg.olverlap + 1) * cfg.plot_max_val;
 
-    float dx = (max > -min) ? max : -min;
+    samp_t dx = (max > -min) ? max : -min;
 
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < data[i]->samp_cnt; j++) {

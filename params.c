@@ -58,9 +58,9 @@ void version()
 void init_cfg()
 {
     cfg.debug_out = DFT_DEBUG_OUT;
-    cfg.output_file = DFT_OUTPUT_FILE;
 
-    cfg.input_file = DFT_WFDISC_FILE;
+    cfg.output_file = DFT_OUTPUT_FILE;
+    cfg.input_file = DFT_INPUT_FILE;
     cfg.channel = DFT_CHANNEL;
 
     cfg.samp_rate = DFT_SAMPLING_RATE;
@@ -81,8 +81,6 @@ void init_cfg()
     cfg.lowcut = DFT_LOWCUT;
     cfg.highcut = DFT_HIGHCUT;
     cfg.butter_order = DFT_BUTTER_ORDER;
-
-    cfg.is_inited = true;
 }
 
 void parse_station_coords()
@@ -212,9 +210,6 @@ int parse_cmd_line(int argc, char *argv[])
     if (cfg.lowcut * cfg.highcut < 0.0f)
         fatal("You should specify both high and low cutoff frequencies");
 
-    if (cfg.lowcut > cfg.highcut)
-        fatal("Incorrect cutoff frequencies");
-
     if (cfg.butter_order <= 0)
         fatal("Incorrect filter order");
 
@@ -245,7 +240,7 @@ void set_input_file(char *path)
     if (p == NULL)
         fatal_errno("malloc");
 
-    sprintf(p, "%s/data.wfdisc", basename(path));
+    sprintf(p, "%s/data.wfdisc", path);
 
     cfg.input_file = p;
 }
@@ -268,7 +263,9 @@ void set_output_file()
     e += sprintf(e, "%s_%s_%s", date, cfg.station_name, cfg.channel);
 
     if (cfg.highcut > 0 && cfg.lowcut > 0)
-        sprintf(e, "_%0.2f_%0.2f_%d.png", cfg.lowcut, cfg.highcut, cfg.olverlap);
+        e += sprintf(e, "_%0.2f_%0.2f", cfg.lowcut, cfg.highcut);
     else
-        sprintf(e, "_no_filter.png");
+        e += sprintf(e, "_no_filter");
+
+    sprintf(e, "_%d.png", cfg.olverlap);
 }

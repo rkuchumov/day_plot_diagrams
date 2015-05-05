@@ -7,18 +7,15 @@
 #define DFT_OUTPUT_FILE NULL
 #define DFT_INPUT_FILE "data.wfdisk"
 
-#define DFT_WFDISC_FILE "data.wfdisc"
-
 #define DFT_CHANNEL "MHZ"
 
 #define DFT_SAMPLING_RATE 50
 #define DFT_PLOT_PERIOD 900
+#define DFT_OVERLAP 5
 
 #define DFT_PLOT_WIDTH 900
 #define DFT_PLOT_HEIGHT 1200
 #define DFT_PLOT_LINE_COLOR "#000000"
-
-#define DFT_OVERLAP 5
 #define DFT_PLOT_MAX_VAL 100.0f
 #define DFT_YTICS_FONT_SIZE 10
 #define DFT_ROT_EPS 50
@@ -33,33 +30,29 @@
 
 /** Config data structure */
 struct cfg_t {
-    unsigned debug_out;
+    unsigned debug_out : 1;
     char *output_file;
     char *input_file;
     char *channel;
 
+    unsigned olverlap;
     unsigned samp_rate;
-
     unsigned plot_period;
+    char *station_name;
+    struct tm *date;
+
     unsigned plot_width;
     unsigned plot_height;
     char *plot_line_color;
+    float plot_max_val;
+    unsigned ytics_font_size;
+    unsigned rot_eps;
 
     double lowcut;
     double highcut;
     unsigned butter_order;
 
     char *env_tz;
-
-    unsigned olverlap;
-    float plot_max_val;
-    unsigned ytics_font_size;
-    unsigned rot_eps;
-
-    char *station_name;
-    struct tm *date;
-
-    unsigned is_inited : 1;
 } cfg;
 
 struct sta_t {

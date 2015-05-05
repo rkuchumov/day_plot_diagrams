@@ -20,7 +20,7 @@ struct wf_t {
     char chan[9];
     double time;
     int nsamp;
-    float samprate;
+    double samprate;
     char dir[65];
     char dfile[33];
     int foff;
@@ -65,7 +65,7 @@ struct data_t **read_data()
         ret[i]->samp_cnt = wf->nsamp;
         ret[i]->time = (time_t) wf->time;
 
-        ret[i]->d = (float *) malloc(sizeof(float) * wf->nsamp);
+        ret[i]->d = (samp_t *) malloc(sizeof(samp_t) * wf->nsamp);
         if (ret[i]->d == NULL)
             fatal_errno("malloc");
 
@@ -75,7 +75,7 @@ struct data_t **read_data()
             if (feof(wf->fp))
                 fatal("Unexpected EOF (%s)", wf->dfile);
 
-            ret[i]->d[j] = (float) read_int(wf->fp);
+            ret[i]->d[j] = (samp_t) read_int(wf->fp);
         }
 
         if (cfg.station_name == NULL) {
@@ -102,7 +102,6 @@ struct data_t **read_data()
 struct wf_t *next_file(FILE *wfdisc_fp) 
 {
     assert(wfdisc_fp != NULL);
-    assert(cfg.is_inited);
 
     struct wf_t *wf = (struct wf_t *) malloc(sizeof(struct wf_t));
     if (wf == NULL)
@@ -131,7 +130,6 @@ struct wf_t *next_file(FILE *wfdisc_fp)
 char *read_wfdisc_line(FILE *wfdisc_fp)
 {
     assert(wfdisc_fp != NULL);
-    assert(cfg.is_inited);
 
 	char *line = NULL;
 	size_t len = 0;
@@ -150,7 +148,6 @@ void parse_wfdisc_line(char *line, struct wf_t *wf)
 {
     assert(line != NULL);
     assert(wf != NULL);
-    assert(cfg.is_inited);
 
     size_t rc = sscanf(line, 
             "%s " /* station code */
@@ -161,7 +158,7 @@ void parse_wfdisc_line(char *line, struct wf_t *wf)
             "%*d " /* julian date */
             "%*f " /* time +(nsamp -1 )/samles */
             "%d "  /* number of samples */
-            "%f "  /* sampling rate in samples/sec */
+            "%lf "  /* sampling rate in samples/sec */
             "%*f " /* nominal calibration */
             "%*f " /* nominal calibration period */
             "%*s " /* instrument code */
@@ -186,8 +183,6 @@ void parse_wfdisc_line(char *line, struct wf_t *wf)
     if (rc != 8) /* number of assigned values in sscanf */
         fatal("error while reading wfsisc file");
 
-
-
 #if 0
     /* debug("%s", line); */
     debug("wfdisc line read (%zd assigned values)", rc);
@@ -198,13 +193,12 @@ void parse_wfdisc_line(char *line, struct wf_t *wf)
     debug("dir \t= %s", wf->dir);
     debug("dfile \t= %s", wf->dfile);
     debug("foff \t= %d", wf->foff);
-    /* sleep(3); */
+    sleep(3);
 #endif
 }
 
 void open_data_file(struct wf_t *wf)
 {
-    assert(cfg.is_inited);
     assert(wf != NULL);
     assert(wf->dir != NULL);
     assert(wf->dfile != NULL);
@@ -230,7 +224,6 @@ void open_data_file(struct wf_t *wf)
 
 int skip_data_file(struct wf_t *wf)
 {
-    assert(cfg.is_inited);
     assert(wf != NULL);
 
     if (strcmp(wf->chan, cfg.channel) == 0)
