@@ -35,8 +35,6 @@ int main(int argc, char *argv[]) {
 
     cfg.samp_rate = data[0]->samp_rate;
 
-    if (NULL == (cfg.date = malloc(sizeof (struct tm))))
-        fatal_errno("malloc");
     cfg.date = m_localtime(&data[0]->time);
     cfg.date->tm_hour = 0;
     cfg.date->tm_min = 0;
