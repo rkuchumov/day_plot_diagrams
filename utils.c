@@ -52,6 +52,8 @@ void printlog(unsigned vlevel, const char *file, int line,
 
     va_end(args);
 
+    fflush(stderr);
+
     if (vlevel == FATAL)
         exit(EXIT_FAILURE);
 }
@@ -59,9 +61,9 @@ void printlog(unsigned vlevel, const char *file, int line,
 char *m_mktemp()
 {
 #ifndef WIN32
-    static char const *template = "/tmp/geodiagrams_XXXXXX";
+    static char const *template = "/tmp/dpd_XXXXXX";
 #else
-    static char const *template = "geodiagrams_aXXXXXX";
+    static char template[] = "dpd_aXXXXXX";
 #endif
 
     int len = strlen(template);
@@ -84,8 +86,8 @@ again:
         if (errno != EEXIST)
             fatal_errno("_mktemp");
 
+        template[strlen(template) - 7]++;
         strcpy(filename, template);
-        filename[strlen(template) - 7]++;
         goto again;
     }
 #endif
