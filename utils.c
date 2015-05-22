@@ -63,7 +63,7 @@ char *m_mktemp()
 #ifndef WIN32
     static char const *template = "/tmp/dpd_XXXXXX";
 #else
-    static char template[] = "dpd_aXXXXXX";
+    static char template[] = "dpd_XXXXXX";
 #endif
 
     int len = strlen(template);
@@ -72,8 +72,6 @@ char *m_mktemp()
     if (filename == NULL)
         fatal_errno("malloc");
 
-    strcpy(filename, template);
-
 #ifndef WIN32
     int fd;
     if ((fd = mkstemp(filename)) == -1)
@@ -81,15 +79,21 @@ char *m_mktemp()
 
     close(fd);
 #else
-again:
-    if (_mktemp(filename) == NULL) {
-        if (errno != EEXIST)
-            fatal_errno("_mktemp");
-
-        template[strlen(template) - 7]++;
+    srand(time(NULL));
+    do {
         strcpy(filename, template);
-        goto again;
-    }
+
+        char *e = filename + len - 1;
+        while (*e == 'X')
+            *e-- = 'a' + (rand() % 2) * ('A' - 'a') + rand() % ('z' - 'a' + 1);
+    } while (access(filename, F_OK) != -1);
+
+    // Possible race condition, lol
+    FILE *fp = fopen(filename, "wb");
+    if (fp == NULL)
+        fatal_errno("fopen");
+
+    fclose(fp);
 #endif
 
     return filename;
