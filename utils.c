@@ -73,6 +73,8 @@ char *m_mktemp()
         fatal_errno("malloc");
 
 #ifndef WIN32
+    strcpy(filename, template);
+
     int fd;
     if ((fd = mkstemp(filename)) == -1)
         fatal_errno("mkstemp");

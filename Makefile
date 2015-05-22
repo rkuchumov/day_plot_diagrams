@@ -1,7 +1,7 @@
 SHELL = /bin/sh
 
 CC = gcc
-CFLAGS = -Wno-missing-field-initializers -g
+CFLAGS = -Wno-missing-field-initializers -O3
 ALL_FLAGS = -std=gnu99 -lm
 
 TARGET = dpd
